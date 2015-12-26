@@ -1,0 +1,8 @@
+Origin: Anday's Cydia Repo
+Label: Anday's Cydia Repo
+Suite: stable
+Version: 1.0
+Codename: fr0st
+Architectures: iphoneos-arm
+Components: main
+Description: Anday's Repository. Trying to do something new, updates are coming.

@@ -1,0 +1,21 @@
+Package: com.minivan50
+Version: 1.0
+Architecture: iphoneos-arm
+Maintainer: and4y <anday112@gmail.com>
+Filename: debs//Minivan50.deb
+Size: 16kb
+Section: Zeppelin
+Description: Maldives 50th independence day logo for zeppelin
+Author: Fr0st anday112@gmail.com
+Name: Minivan 50
+
+Package: com.and4y.diraagu
+Version: 1.0
+Architecture: iphoneos-arm
+Maintainer: and4y <anday112@gmail.com>
+Filename: debs//Dhiraagu Old.deb
+Size: 16kb
+Section: Zeppelin
+Description: Maldives Telecom operator Dhiraagu Old logo for zeppelin
+Author: Fr0st <anday112@gmail.com>
+Name: Dhiraagu Zeppelin
