@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+  </head>
+  <body class="bg-gray-50 text-gray-800">
+    <div class="p-6 max-w-4xl mx-auto">
+      <h1 class="text-2xl font-bold mb-4">Invoice Generator</h1>
+      <div id="items-container"></div>
+      <button onclick="addItem()" class="mb-6 bg-blue-500 text-white px-4 py-2 rounded">Add Item</button>
+
+      <div id="invoice" class="bg-white p-6 shadow-lg rounded-lg">
+        <h2 class="text-xl font-semibold mb-4">Invoice</h2>
+        <ul id="invoice-items" class="mb-4"></ul>
+        <h3 class="text-lg font-bold">Total: $<span id="total">0.00</span></h3>
+      </div>
+
+      <div class="mt-6 flex gap-3">
+        <button onclick="generatePDF()" class="bg-green-500 text-white px-4 py-2 rounded">Download PDF</button>
+        <button onclick="window.print()" class="bg-gray-600 text-white px-4 py-2 rounded">Print</button>
+      </div>
+    </div>
+
+    <script>
+      let items = [];
+
+      function addItem() {
+        const index = items.length;
+        items.push({ description: '', quantity: 1, price: 0, tax: 0, discount: 0 });
+
+        const itemHTML = `
+          <div class="grid grid-cols-5 gap-2 mb-3 bg-gray-100 p-3 rounded-lg">
+            <input type="text" placeholder="Description" class="col-span-2 p-2 rounded" oninput="updateItem(${index}, 'description', this.value)">
+            <input type="number" placeholder="Qty" class="p-2 rounded" value="1" oninput="updateItem(${index}, 'quantity', this.value)">
+            <input type="number" placeholder="Price" class="p-2 rounded" value="0" oninput="updateItem(${index}, 'price', this.value)">
+            <input type="number" placeholder="Tax %" class="p-2 rounded" value="0" oninput="updateItem(${index}, 'tax', this.value)">
+            <input type="number" placeholder="Discount %" class="p-2 rounded" value="0" oninput="updateItem(${index}, 'discount', this.value)">
+          </div>`;
+
+        document.getElementById('items-container').insertAdjacentHTML('beforeend', itemHTML);
+        renderInvoice();
+      }
+
+      function updateItem(index, field, value) {
+        items[index][field] = field === 'description' ? value : parseFloat(value);
+        renderInvoice();
+      }
+
+      function calculateTotal() {
+        return items.reduce((total, item) => {
+          const subtotal = item.quantity * item.price;
+          const taxAmount = (subtotal * item.tax) / 100;
+          const discountAmount = (subtotal * item.discount) / 100;
+          return total + subtotal + taxAmount - discountAmount;
+        }, 0);
+      }
+
+      function renderInvoice() {
+        const ul = document.getElementById('invoice-items');
+        ul.innerHTML = '';
+        items.forEach((item) => {
+          const li = document.createElement('li');
+          li.className = 'border-b py-2 flex justify-between';
+          li.innerHTML = `<span>${item.description}</span><span>${item.quantity} x $${item.price.toFixed(2)} + ${item.tax}% - ${item.discount}%</span>`;
+          ul.appendChild(li);
+        });
+        document.getElementById('total').textContent = calculateTotal().toFixed(2);
+      }
+
+      function generatePDF() {
+        const node = document.getElementById('invoice');
+        htmlToImage.toCanvas(node).then((canvas) => {
+          const imgData = canvas.toDataURL('image/png');
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF();
+          const imgProps = pdf.getImageProperties(imgData);
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+          pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+          pdf.save('invoice.pdf');
+        });
+      }
+    </script>
+  </body>
+</html>
