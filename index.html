@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -11,11 +12,14 @@
   <body class="bg-gray-50 text-gray-800">
     <div class="p-6 max-w-4xl mx-auto">
       <div class="flex items-center justify-between mb-4">
-        <div>
-          <h1 class="text-3xl font-bold">BitsyBox</h1>
-          <p class="text-sm text-gray-600">H.Gadhage, Male' City, +960 737-1611</p>
+        <div class="flex items-center space-x-4">
+          <img src="/mnt/data/WhatsApp Image 2025-07-25 at 14.31.54.jpeg" alt="Logo" class="w-20 h-20 object-contain" />
+          <div>
+            <h1 class="text-3xl font-bold">BitsyBox</h1>
+            <p class="text-sm text-gray-600">H.Gadhage, Male' City</p>
+            <p class="text-sm text-gray-600">+960 737-1611</p>
+          </div>
         </div>
-        <img src="/mnt/data/WhatsApp Image 2025-07-25 at 14.31.54.jpeg" alt="Logo" class="w-20 h-20 object-contain" />
       </div>
 
       <h2 class="text-xl font-semibold mb-6 text-center">Invoice Generator</h2>
@@ -26,6 +30,11 @@
         <input id="customer-name" class="p-2 rounded border" placeholder="Customer Name">
       </div>
 
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <input id="manual-discount" type="number" class="p-2 rounded border" placeholder="Overall Discount %">
+        <input id="manual-tax" type="number" class="p-2 rounded border" placeholder="GST (fixed)" disabled value="8">
+      </div>
+
       <div id="items-container"></div>
       <button onclick="addItem()" class="mb-6 bg-blue-500 text-white px-4 py-2 rounded">Add Item</button>
 
@@ -34,20 +43,33 @@
         <p class="mb-2">Invoice #: <span id="display-invoice-number"></span></p>
         <p class="mb-2">Date: <span id="display-invoice-date"></span></p>
         <p class="mb-4">Customer: <span id="display-customer-name"></span></p>
-        <ul id="invoice-items" class="mb-4"></ul>
-        <h3 class="text-lg font-bold">Total: MVR <span id="total">0.00</span></h3>
+
+        <div class="grid grid-cols-3 font-bold border-b pb-2 mb-2">
+          <div>Item</div>
+          <div class="text-center">Quantity</div>
+          <div class="text-right">Price (MVR)</div>
+        </div>
+        <ul id="invoice-items" class="mb-4 space-y-1"></ul>
+
+        <div class="text-right space-y-1 border-t pt-4">
+          <p>Subtotal: <span id="subtotal">0.00</span></p>
+          <p>Discount: <span id="discount">0.00</span></p>
+          <p>Tax (8% GST): <span id="tax">0.00</span></p>
+          <p class="font-bold text-lg">Total: MVR <span id="total">0.00</span></p>
+        </div>
 
         <div class="mt-6 border-t pt-4 text-sm text-gray-700">
           <p><strong>Note:</strong> We kindly request that you settle the invoice as soon as possible.</p>
           <p><strong>Bank Details:</strong></p>
           <p>Maldives Islamic Bank</p>
-          <p>Account Name: AKK Maldives</p>
+          <p>Account Name: AKK MALDIVES</p>
           <p>Account Number: 90501400033571000</p>
         </div>
       </div>
 
       <div class="mt-6 flex gap-3">
         <button onclick="generatePDF()" class="bg-green-500 text-white px-4 py-2 rounded">Download PDF</button>
+        <button onclick="generatePNG()" class="bg-blue-600 text-white px-4 py-2 rounded">Download PNG</button>
         <button onclick="window.print()" class="bg-gray-600 text-white px-4 py-2 rounded">Print</button>
       </div>
     </div>
@@ -57,15 +79,13 @@
 
       function addItem() {
         const index = items.length;
-        items.push({ description: '', quantity: 1, price: 0, tax: 0, discount: 0 });
+        items.push({ description: '', quantity: 1, price: 0 });
 
         const itemHTML = `
-          <div class="grid grid-cols-5 gap-2 mb-3 bg-gray-100 p-3 rounded-lg">
-            <input type="text" placeholder="Description" class="col-span-2 p-2 rounded" oninput="updateItem(${index}, 'description', this.value)">
+          <div class="grid grid-cols-3 gap-2 mb-3 bg-gray-100 p-3 rounded-lg">
+            <input type="text" placeholder="Description" class="p-2 rounded" oninput="updateItem(${index}, 'description', this.value)">
             <input type="number" placeholder="Qty" class="p-2 rounded" value="1" oninput="updateItem(${index}, 'quantity', this.value)">
             <input type="number" placeholder="Price" class="p-2 rounded" value="0" oninput="updateItem(${index}, 'price', this.value)">
-            <input type="number" placeholder="Tax %" class="p-2 rounded" value="0" oninput="updateItem(${index}, 'tax', this.value)">
-            <input type="number" placeholder="Discount %" class="p-2 rounded" value="0" oninput="updateItem(${index}, 'discount', this.value)">
           </div>`;
 
         document.getElementById('items-container').insertAdjacentHTML('beforeend', itemHTML);
@@ -77,13 +97,20 @@
         renderInvoice();
       }
 
-      function calculateTotal() {
-        return items.reduce((total, item) => {
-          const subtotal = item.quantity * item.price;
-          const taxAmount = (subtotal * item.tax) / 100;
-          const discountAmount = (subtotal * item.discount) / 100;
-          return total + subtotal + taxAmount - discountAmount;
-        }, 0);
+      function calculateBreakdown() {
+        let subtotal = 0;
+        items.forEach(item => {
+          subtotal += item.quantity * item.price;
+        });
+
+        const discountRate = parseFloat(document.getElementById('manual-discount').value) || 0;
+        const taxRate = 6;
+
+        const discount = (subtotal * discountRate) / 100;
+        const tax = (subtotal * taxRate) / 100;
+        const total = subtotal + tax - discount;
+
+        return { subtotal, tax, discount, total };
       }
 
       function renderInvoice() {
@@ -105,11 +132,16 @@
         ul.innerHTML = '';
         items.forEach((item) => {
           const li = document.createElement('li');
-          li.className = 'border-b py-2 flex justify-between';
-          li.innerHTML = `<span>${item.description}</span><span>${item.quantity} x MVR ${item.price.toFixed(2)} + ${item.tax}% - ${item.discount}%</span>`;
+          li.className = 'grid grid-cols-3 py-1 text-sm';
+          li.innerHTML = `<div>${item.description}</div><div class="text-center">${item.quantity}</div><div class="text-right">${(item.price * item.quantity).toFixed(2)}</div>`;
           ul.appendChild(li);
         });
-        document.getElementById('total').textContent = calculateTotal().toFixed(2);
+
+        const breakdown = calculateBreakdown();
+        document.getElementById('subtotal').textContent = breakdown.subtotal.toFixed(2);
+        document.getElementById('discount').textContent = breakdown.discount.toFixed(2);
+        document.getElementById('tax').textContent = breakdown.tax.toFixed(2);
+        document.getElementById('total').textContent = breakdown.total.toFixed(2);
       }
 
       function generatePDF() {
@@ -124,6 +156,18 @@
           const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
           pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
           pdf.save('invoice.pdf');
+        });
+      }
+
+      function generatePNG() {
+        renderInvoice();
+        const node = document.getElementById('invoice');
+        htmlToImage.toPng(node).then((dataUrl) => {
+          const invoiceNum = document.getElementById('invoice-number').value || 'invoice';
+          const link = document.createElement('a');
+          link.download = invoiceNum + '.png';
+          link.href = dataUrl;
+          link.click();
         });
       }
     </script>
