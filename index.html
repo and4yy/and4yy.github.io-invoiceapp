@@ -10,14 +10,40 @@
   </head>
   <body class="bg-gray-50 text-gray-800">
     <div class="p-6 max-w-4xl mx-auto">
-      <h1 class="text-2xl font-bold mb-4">Invoice Generator</h1>
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h1 class="text-3xl font-bold">AKK MALDIVES</h1>
+          <p class="text-sm text-gray-600">Maafannu, Male' City, Maldives</p>
+        </div>
+        <img src="/mnt/data/WhatsApp Image 2025-07-25 at 14.31.54.jpeg" alt="Logo" class="w-20 h-20 object-contain" />
+      </div>
+
+      <h2 class="text-xl font-semibold mb-6 text-center">Invoice Generator</h2>
+
+      <div class="grid grid-cols-3 gap-4 mb-6">
+        <input id="invoice-number" class="p-2 rounded border" placeholder="Invoice Number">
+        <input id="invoice-date" type="date" class="p-2 rounded border">
+        <input id="customer-name" class="p-2 rounded border" placeholder="Customer Name">
+      </div>
+
       <div id="items-container"></div>
       <button onclick="addItem()" class="mb-6 bg-blue-500 text-white px-4 py-2 rounded">Add Item</button>
 
       <div id="invoice" class="bg-white p-6 shadow-lg rounded-lg">
         <h2 class="text-xl font-semibold mb-4">Invoice</h2>
+        <p class="mb-2">Invoice #: <span id="display-invoice-number"></span></p>
+        <p class="mb-2">Date: <span id="display-invoice-date"></span></p>
+        <p class="mb-4">Customer: <span id="display-customer-name"></span></p>
         <ul id="invoice-items" class="mb-4"></ul>
-        <h3 class="text-lg font-bold">Total: $<span id="total">0.00</span></h3>
+        <h3 class="text-lg font-bold">Total: MVR <span id="total">0.00</span></h3>
+
+        <div class="mt-6 border-t pt-4 text-sm text-gray-700">
+          <p><strong>Note:</strong> We kindly request that you settle the invoice as soon as possible.</p>
+          <p><strong>Bank Details:</strong></p>
+          <p>Maldives Islamic Bank</p>
+          <p>Account Name: AKK Maldives</p>
+          <p>Account Number: 99991011</p>
+        </div>
       </div>
 
       <div class="mt-6 flex gap-3">
@@ -61,18 +87,33 @@
       }
 
       function renderInvoice() {
+        const invoiceNumberInput = document.getElementById('invoice-number');
+        const dateInput = document.getElementById('invoice-date');
+        if (!invoiceNumberInput.value) {
+          invoiceNumberInput.value = 'INV-' + Math.floor(Math.random() * 90000 + 10000);
+        }
+        if (!dateInput.value) {
+          const today = new Date().toISOString().substr(0, 10);
+          dateInput.value = today;
+        }
+
+        document.getElementById('display-invoice-number').textContent = invoiceNumberInput.value;
+        document.getElementById('display-invoice-date').textContent = dateInput.value;
+        document.getElementById('display-customer-name').textContent = document.getElementById('customer-name').value;
+
         const ul = document.getElementById('invoice-items');
         ul.innerHTML = '';
         items.forEach((item) => {
           const li = document.createElement('li');
           li.className = 'border-b py-2 flex justify-between';
-          li.innerHTML = `<span>${item.description}</span><span>${item.quantity} x $${item.price.toFixed(2)} + ${item.tax}% - ${item.discount}%</span>`;
+          li.innerHTML = `<span>${item.description}</span><span>${item.quantity} x MVR ${item.price.toFixed(2)} + ${item.tax}% - ${item.discount}%</span>`;
           ul.appendChild(li);
         });
         document.getElementById('total').textContent = calculateTotal().toFixed(2);
       }
 
       function generatePDF() {
+        renderInvoice();
         const node = document.getElementById('invoice');
         htmlToImage.toCanvas(node).then((canvas) => {
           const imgData = canvas.toDataURL('image/png');
