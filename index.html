@@ -40,7 +40,7 @@
       <div id="invoice" class="bg-white p-6 shadow-lg rounded-lg">
         <div class="flex items-center space-x-4 mb-4">
           <img src="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo1.png?raw=true" alt="Logo" class="w-16 h-16 object-contain" />
-            <div>
+          <div>
             <h1 class="text-3xl font-bold">BitsyBox</h1>
             <p class="text-sm text-gray-600">H.Gadhage, Male' City</p>
             <p class="text-sm text-gray-600">+960 737-1611</p>
@@ -157,28 +157,46 @@
       function generatePDF() {
         renderInvoice();
         const node = document.getElementById('invoice');
-        htmlToImage.toCanvas(node).then((canvas) => {
-          const imgData = canvas.toDataURL('image/png');
-          const { jsPDF } = window.jspdf;
-          const pdf = new jsPDF();
-          const imgProps = pdf.getImageProperties(imgData);
-          const pdfWidth = pdf.internal.pageSize.getWidth();
-          const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-          pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-          pdf.save('invoice.pdf');
-        });
+
+        htmlToImage.toPng(node, { pixelRatio: 2 })
+          .then((dataUrl) => {
+            const img = new Image();
+            img.src = dataUrl;
+            img.onload = function () {
+              const { jsPDF } = window.jspdf;
+              const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'px',
+                format: [img.width, img.height]
+              });
+
+              pdf.addImage(img, 'PNG', 0, 0, img.width, img.height);
+              const invoiceNum = document.getElementById('invoice-number').value || 'invoice';
+              pdf.save(invoiceNum + '.pdf');
+            };
+          })
+          .catch((error) => {
+            console.error('PDF generation failed:', error);
+            alert('Failed to generate PDF. See console for details.');
+          });
       }
 
       function generatePNG() {
         renderInvoice();
         const node = document.getElementById('invoice');
-        htmlToImage.toPng(node).then((dataUrl) => {
-          const invoiceNum = document.getElementById('invoice-number').value || 'invoice';
-          const link = document.createElement('a');
-          link.download = invoiceNum + '.png';
-          link.href = dataUrl;
-          link.click();
-        });
+
+        htmlToImage.toPng(node, { pixelRatio: 2 })
+          .then((dataUrl) => {
+            const link = document.createElement('a');
+            const invoiceNum = document.getElementById('invoice-number').value || 'invoice';
+            link.download = invoiceNum + '.png';
+            link.href = dataUrl;
+            link.click();
+          })
+          .catch((error) => {
+            console.error('PNG generation failed:', error);
+            alert('Failed to generate PNG. See console for details.');
+          });
       }
     </script>
   </body>
