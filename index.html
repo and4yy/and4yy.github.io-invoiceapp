@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -27,11 +26,11 @@
       <div class="grid grid-cols-3 gap-4 mb-6">
         <input id="invoice-number" class="p-2 rounded border" placeholder="Invoice Number">
         <input id="invoice-date" type="date" class="p-2 rounded border">
-        <input id="customer-name" class="p-2 rounded border" placeholder="Customer Name">
+        <input id="customer-name" class="p-2 rounded border" placeholder="Customer Name" oninput="renderInvoice()">
       </div>
 
       <div class="grid grid-cols-2 gap-4 mb-6">
-        <input id="manual-discount" type="number" class="p-2 rounded border" placeholder="Overall Discount %">
+        <input id="manual-discount" type="number" class="p-2 rounded border" placeholder="Overall Discount %" oninput="renderInvoice()">
         <input id="manual-tax" type="number" class="p-2 rounded border" placeholder="GST (fixed)" disabled value="">
       </div>
 
@@ -39,6 +38,15 @@
       <button onclick="addItem()" class="mb-6 bg-blue-500 text-white px-4 py-2 rounded">Add Item</button>
 
       <div id="invoice" class="bg-white p-6 shadow-lg rounded-lg">
+        <div class="flex items-center space-x-4 mb-4">
+          <img src="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo.png?raw=true" alt="Logo" class="w-16 h-16 object-contain" />
+          <div>
+            <h2 class="text-2xl font-bold">BitsyBox</h2>
+            <p class="text-sm text-gray-600">H.Gadhage, Male' City</p>
+            <p class="text-sm text-gray-600">+960 737-1611</p>
+          </div>
+        </div>
+
         <h2 class="text-xl font-semibold mb-4">Invoice</h2>
         <p class="mb-2">Invoice #: <span id="display-invoice-number"></span></p>
         <p class="mb-2">Date: <span id="display-invoice-date"></span></p>
@@ -58,13 +66,14 @@
           <p class="font-bold text-lg">Total: MVR <span id="total">0.00</span></p>
         </div>
 
-        <div class="mt-6 border-t pt-4 text-sm text-gray-700">
+        <footer class="mt-6 border-t pt-4 text-sm text-gray-700 text-center">
           <p><strong>Note:</strong> We kindly request that you settle the invoice as soon as possible.</p>
           <p><strong>Bank Details:</strong></p>
           <p>Maldives Islamic Bank</p>
           <p>Account Name: AKK MALDIVES</p>
           <p>Account Number: 90501400033571000</p>
-        </div>
+          <p class="mt-2 font-semibold">BitsyBox</p>
+        </footer>
       </div>
 
       <div class="mt-6 flex gap-3">
@@ -107,8 +116,9 @@
         const taxRate = 6;
 
         const discount = (subtotal * discountRate) / 100;
-        const tax = (subtotal * taxRate) / 100;
-        const total = subtotal + tax - discount;
+        const taxableAmount = subtotal - discount;
+        const tax = (taxableAmount * taxRate) / 100;
+        const total = taxableAmount + tax;
 
         return { subtotal, tax, discount, total };
       }
