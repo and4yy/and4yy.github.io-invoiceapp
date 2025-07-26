@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -12,7 +13,7 @@
     <div class="p-6 max-w-4xl mx-auto">
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center space-x-4">
-          <img src="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo1.png?raw=true" alt="Logo" class="w-20 h-20 object-contain" />
+          <img src="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo.jpeg?raw=true" alt="Logo" class="w-20 h-20 object-contain" />
           <div>
             <h1 class="text-3xl font-bold">BitsyBox</h1>
             <p class="text-sm text-gray-600">H.Gadhage, Male' City</p>
@@ -26,11 +27,11 @@
       <div class="grid grid-cols-3 gap-4 mb-6">
         <input id="invoice-number" class="p-2 rounded border" placeholder="Invoice Number">
         <input id="invoice-date" type="date" class="p-2 rounded border">
-        <input id="customer-name" class="p-2 rounded border" placeholder="Customer Name" oninput="renderInvoice()">
+        <input id="customer-name" class="p-2 rounded border" placeholder="Customer Name">
       </div>
 
       <div class="grid grid-cols-2 gap-4 mb-6">
-        <input id="manual-discount" type="number" class="p-2 rounded border" placeholder="Overall Discount %" oninput="renderInvoice()">
+        <input id="manual-discount" type="number" class="p-2 rounded border" placeholder="Overall Discount %">
         <input id="manual-tax" type="number" class="p-2 rounded border" placeholder="GST (fixed)" disabled value="">
       </div>
 
@@ -38,15 +39,6 @@
       <button onclick="addItem()" class="mb-6 bg-blue-500 text-white px-4 py-2 rounded">Add Item</button>
 
       <div id="invoice" class="bg-white p-6 shadow-lg rounded-lg">
-        <div class="flex items-center space-x-4 mb-4">
-          <img src="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo1.png?raw=true" alt="Logo" class="w-16 h-16 object-contain" />
-          <div>
-            <h1 class="text-3xl font-bold">BitsyBox</h1>
-            <p class="text-sm text-gray-600">H.Gadhage, Male' City</p>
-            <p class="text-sm text-gray-600">+960 737-1611</p>
-          </div>
-        </div>
-
         <h2 class="text-xl font-semibold mb-4">Invoice</h2>
         <p class="mb-2">Invoice #: <span id="display-invoice-number"></span></p>
         <p class="mb-2">Date: <span id="display-invoice-date"></span></p>
@@ -66,14 +58,13 @@
           <p class="font-bold text-lg">Total: MVR <span id="total">0.00</span></p>
         </div>
 
-        <footer class="mt-6 border-t pt-4 text-sm text-gray-700 text-center">
+        <div class="mt-6 border-t pt-4 text-sm text-gray-700">
+          <p><strong>Note:</strong> We kindly request that you settle the invoice as soon as possible.</p>
           <p><strong>Bank Details:</strong></p>
           <p>Maldives Islamic Bank</p>
           <p>Account Name: AKK MALDIVES</p>
           <p>Account Number: 90501400033571000</p>
-          <p><strong>Note:</strong> We kindly request that you settle the invoice as soon as possible.</p>
-          <p class="mt-2 font-semibold">BitsyBox</p>
-        </footer>
+        </div>
       </div>
 
       <div class="mt-6 flex gap-3">
@@ -113,12 +104,11 @@
         });
 
         const discountRate = parseFloat(document.getElementById('manual-discount').value) || 0;
-        const taxRate = 0;
+        const taxRate = 6;
 
         const discount = (subtotal * discountRate) / 100;
-        const taxableAmount = subtotal - discount;
-        const tax = (taxableAmount * taxRate) / 100;
-        const total = taxableAmount + tax;
+        const tax = (subtotal * taxRate) / 100;
+        const total = subtotal + tax - discount;
 
         return { subtotal, tax, discount, total };
       }
@@ -157,55 +147,29 @@
       function generatePDF() {
         renderInvoice();
         const node = document.getElementById('invoice');
-
-        setTimeout(() => {
-          htmlToImage.toPng(node, { pixelRatio: 2 })
-            .then((dataUrl) => {
-              const img = new Image();
-              img.src = dataUrl;
-              img.onload = function () {
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({
-                  orientation: 'portrait',
-                  unit: 'px',
-                  format: [img.width, img.height]
-                });
-
-                pdf.addImage(img, 'PNG', 0, 0, img.width, img.height);
-                const invoiceNum = document.getElementById('invoice-number').value || 'invoice';
-                pdf.save(invoiceNum + '.pdf');
-              };
-            })
-            .catch((error) => {
-              console.error('PDF generation failed:', error);
-              alert('Failed to generate PDF. See console for details.');
-            });
-        }, 100);
+        htmlToImage.toCanvas(node).then((canvas) => {
+          const imgData = canvas.toDataURL('image/png');
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF();
+          const imgProps = pdf.getImageProperties(imgData);
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+          pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+          pdf.save('invoice.pdf');
+        });
       }
 
       function generatePNG() {
         renderInvoice();
         const node = document.getElementById('invoice');
-
-        setTimeout(() => {
-          htmlToImage.toPng(node, { pixelRatio: 2 })
-            .then((dataUrl) => {
-              const link = document.createElement('a');
-              const invoiceNum = document.getElementById('invoice-number').value || 'invoice';
-              link.download = invoiceNum + '.png';
-              link.href = dataUrl;
-              link.click();
-            })
-            .catch((error) => {
-              console.error('PNG generation failed:', error);
-              alert('Failed to generate PNG. See console for details.');
-            });
-        }, 100);
+        htmlToImage.toPng(node).then((dataUrl) => {
+          const invoiceNum = document.getElementById('invoice-number').value || 'invoice';
+          const link = document.createElement('a');
+          link.download = invoiceNum + '.png';
+          link.href = dataUrl;
+          link.click();
+        });
       }
-
-      window.onload = () => {
-        renderInvoice();
-      };
     </script>
   </body>
 </html>
