@@ -1,550 +1,317 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Invoice Generator</title>
-<style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f5f7fa;
-    margin: 0;
-    padding: 20px;
-    color: #333;
-  }
-  .container {
-    max-width: 700px;
-    background: #fff;
-    padding: 30px 40px;
-    margin: 0 auto;
-    border-radius: 8px;
-    box-shadow: 0 8px 18px rgba(0,0,0,0.1);
-  }
-  header {
-    text-align: center;
-    margin-bottom: 25px;
-    position: relative;
-  }
-  header img {
-    max-height: 70px;
-  }
-  h1 {
-    margin-top: 10px;
-    font-weight: 700;
-    font-size: 28px;
-    color: #0055a5;
-  }
-  form {
-    margin-bottom: 20px;
-  }
-  .row {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 15px;
-    flex-wrap: wrap;
-  }
-  .row > div {
-    flex: 1;
-    min-width: 120px;
-  }
-  label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 600;
-  }
-  input[type="text"],
-  input[type="number"],
-  input[type="tel"] {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1.5px solid #ccc;
-    border-radius: 6px;
-    font-size: 15px;
-    transition: border-color 0.3s;
-  }
-  input[type="text"]:focus,
-  input[type="number"]:focus,
-  input[type="tel"]:focus {
-    border-color: #0055a5;
-    outline: none;
-  }
-  .items-list {
-    margin-top: 20px;
-  }
-  .items-list > div {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-  .items-list input {
-    flex: 1;
-  }
-  .items-list input.price,
-  .items-list input.quantity {
-    max-width: 90px;
-  }
-  button {
-    background-color: #007bff;
-    border: none;
-    color: white;
-    padding: 12px 20px;
-    font-size: 16px;
-    border-radius: 7px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-right: 10px;
-  }
-  button:hover {
-    background-color: #0056b3;
-  }
-  .btn-danger {
-    background-color: #dc3545;
-  }
-  .btn-danger:hover {
-    background-color: #a71d2a;
-  }
-  .btn-success {
-    background-color: #28a745;
-  }
-  .btn-success:hover {
-    background-color: #1e7e34;
-  }
-  .invoice-output {
-    background: #fff;
-    padding: 20px 25px;
-    border-radius: 8px;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
-    color: #222;
-    font-size: 16px;
-    position: relative;
-    min-height: 500px;
-  }
-  .invoice-header {
-    border-bottom: 3px solid #0055a5;
-    padding-bottom: 15px;
-    margin-bottom: 25px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
-  }
-  .invoice-header h2 {
-    margin: 0;
-    color: #0055a5;
-    font-size: 28px;
-    flex: 1 1 auto;
-  }
-  .invoice-header .company-info {
-    text-align: right;
-    font-size: 14px;
-    flex: 1 1 auto;
-    min-width: 220px;
-  }
-  .invoice-header .company-logo {
-    max-height: 60px;
-    flex-shrink: 0;
-  }
-  .invoice-details {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 25px;
-    font-size: 16px;
-    flex-wrap: wrap;
-    gap: 15px;
-  }
-  .invoice-details div {
-    flex: 1 1 45%;
-    min-width: 220px;
-  }
-  .invoice-details .customer-info {
-    padding-right: 20px;
-  }
-  .invoice-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 25px;
-  }
-  .invoice-table th,
-  .invoice-table td {
-    padding: 12px 10px;
-    border-bottom: 1.5px solid #ccc;
-    font-weight: 600;
-  }
-  /* Left align the first column (Item) */
-  .invoice-table th:first-child,
-  .invoice-table td:first-child {
-    text-align: left;
-    font-weight: 600;
-  }
-  /* Right align Price, Qty, Total */
-  .invoice-table th:nth-child(n+2),
-  .invoice-table td:nth-child(n+2) {
-    text-align: right;
-    font-weight: 600;
-  }
-  /* Normal font weight for body cells */
-  .invoice-table tbody td {
-    font-weight: normal;
-  }
-  .invoice-table tr:nth-child(even) {
-    background-color: #f7f9fc;
-  }
-  .summary {
-    max-width: 320px;
-    margin-left: auto;
-    font-size: 18px;
-  }
-  .summary div {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
-  }
-  .summary div.total {
-    font-weight: 700;
-    font-size: 22px;
-    border-top: 3px solid #0055a5;
-    padding-top: 12px;
-  }
-  .currency {
-    margin-left: 4px;
-  }
-
-  /* Customer Name & Phone inputs inline */
-  .customer-phone-row {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 15px;
-  }
-  .customer-phone-row > div {
-    flex: 1;
-    min-width: 150px;
-  }
-
-  /* Footer with bank details */
-  .invoice-footer {
-    border-top: 2px solid #ddd;
-    padding-top: 15px;
-    margin-top: 35px;
-    font-size: 14px;
-    color: #555;
-    text-align: center;
-    line-height: 1.5;
-  }
-
-  @media (max-width: 600px) {
-    .row,
-    .customer-phone-row {
-      flex-direction: column;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BitsyBox</title>
+      <link rel="apple-touch-icon" sizes="180x180" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo1.png?raw=true">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo1.png?raw=true">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo1.png?raw=true">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6f8;
     }
-    .invoice-header {
-      flex-direction: column;
-      align-items: flex-start;
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      background: #fff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    header img {
+      max-width: 150px;
+    }
+
+    h1 {
+      margin-top: 10px;
+      font-size: 24px;
+      color: #0a194f;
+    }
+
+    .flex {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .flex input, .flex button {
+      flex: 1;
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .invoice-table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+
+    .invoice-table th {
+      background: #0a194f;
+      color: white;
+      text-align: left;
+      padding: 10px;
+    }
+
+    .invoice-table td {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .invoice-table select, .invoice-table input {
+      width: 100%;
+      padding: 6px;
+    }
+
+    .invoice-table td:first-child {
+      width: 35%;
+    }
+
+    .totals, .bank-info {
+      margin-top: 20px;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .totals {
+      text-align: right;
+    }
+
+    .actions {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 10px;
     }
-    .invoice-details {
-      flex-direction: column;
-      gap: 10px;
+
+    .actions button {
+      padding: 12px;
+      font-size: 15px;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
-    .summary {
-      margin-left: 0;
-      max-width: 100%;
+
+    .create { background: #6f42c1; }
+
+    .footer {
+      font-size: 14px;
+      text-align: center;
+      margin-top: 40px;
     }
-  }
-</style>
+
+    .footer strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+  </style>
 </head>
 <body>
-<div class="container">
-  <header>
-    <img src="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo1.png?raw=true" alt="Company Logo" />
-    <h1>BitsyBox Invoice Generator</h1>
-  </header>
 
-  <form id="invoice-form">
-    <div class="row">
-      <div>
-        <label>Invoice Number</label>
-        <input type="text" id="invoice-number" readonly />
-      </div>
-      <div>
-        <label>Date</label>
-        <input type="text" id="invoice-date" readonly />
-      </div>
+  <!-- FORM SECTION -->
+  <div class="container" id="form-container">
+    <header>
+      <img src="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo1.png?raw=true" alt="BitsyBox Logo">
+      <h1>BitsyBox Invoice Generator</h1>
+    </header>
+
+    <div class="flex">
+      <input type="text" id="customer-name" placeholder="Customer Name">
+      <input type="tel" id="customer-contact" placeholder="Contact Number">
     </div>
 
-    <div class="customer-phone-row">
-      <div>
-        <label>Customer Name</label>
-        <input type="text" id="customer-name" placeholder="Customer Name" required />
-      </div>
-      <div>
-        <label>Phone Number</label>
-        <input type="tel" id="customer-phone" placeholder="Phone Number" required />
-      </div>
-    </div>
-
-    <div class="items-list" id="items-list">
-      <label>Items</label>
-      <div>
-        <input type="text" class="item-name" placeholder="Item Description" required />
-        <input type="number" class="price" placeholder="Price (MVR)" min="0" step="0.01" required />
-        <input type="number" class="quantity" placeholder="Qty" min="1" step="1" required />
-        <button type="button" class="btn-danger" onclick="removeItem(this)">✕</button>
-      </div>
-    </div>
-
-    <button type="button" class="btn-success" onclick="addItem()">+ Add Item</button>
-
-    <div class="row" style="margin-top: 25px;">
-      <div>
-        <label>Subtotal (MVR)</label>
-        <input type="text" id="subtotal" readonly />
-      </div>
-      <div>
-        <label>Discount (MVR)</label>
-        <input type="number" id="discount" min="0" step="0.01" value="0" />
-      </div>
-      <div>
-        <label>Tax (GST %) </label>
-        <input type="number" id="tax" min="0" step="0.01" value="6" />
-      </div>
-      <div>
-        <label>Total (MVR)</label>
-        <input type="text" id="total" readonly />
-      </div>
-    </div>
-
-    <div style="margin-top: 20px;">
-      <button type="button" onclick="generateInvoice()">Generate Invoice</button>
-      <button type="button" onclick="downloadInvoice()">Download PNG</button>
-      <button type="button" onclick="shareWhatsApp()">Share via WhatsApp</button>
-    </div>
-  </form>
-
-  <div id="invoice-output" class="invoice-output" style="display:none;"></div>
-</div>
-
-<script>
-  function formatDate(date) {
-    const d = new Date(date);
-    const month = '' + (d.getMonth() + 1);
-    const day = '' + d.getDate();
-    const year = d.getFullYear();
-    return [year, month.padStart(2, '0'), day.padStart(2, '0')].join('-');
-  }
-
-  function initInvoice() {
-    const invoiceNumInput = document.getElementById('invoice-number');
-    const dateInput = document.getElementById('invoice-date');
-    const storedNum = localStorage.getItem('lastInvoiceNumber');
-    let invoiceNum = storedNum ? parseInt(storedNum) + 1 : 1001;
-    invoiceNumInput.value = invoiceNum;
-    dateInput.value = formatDate(new Date());
-    localStorage.setItem('lastInvoiceNumber', invoiceNum);
-  }
-
-  function addItem() {
-    const itemsList = document.getElementById('items-list');
-    const div = document.createElement('div');
-    div.innerHTML = `
-      <input type="text" class="item-name" placeholder="Item Description" required />
-      <input type="number" class="price" placeholder="Price (MVR)" min="0" step="0.01" required />
-      <input type="number" class="quantity" placeholder="Qty" min="1" step="1" required />
-      <button type="button" class="btn-danger" onclick="removeItem(this)">✕</button>
-    `;
-    itemsList.appendChild(div);
-  }
-
-  function removeItem(btn) {
-    const itemsList = document.getElementById('items-list');
-    if (itemsList.children.length > 2) {
-      btn.parentElement.remove();
-    } else {
-      alert('At least one item is required.');
-    }
-  }
-
-  function calculateTotals() {
-    const prices = document.querySelectorAll('.price');
-    const quantities = document.querySelectorAll('.quantity');
-
-    let subtotal = 0;
-    for (let i = 0; i < prices.length; i++) {
-      const price = parseFloat(prices[i].value) || 0;
-      const qty = parseInt(quantities[i].value) || 0;
-      subtotal += price * qty;
-    }
-
-    document.getElementById('subtotal').value = subtotal.toFixed(2);
-
-    const discount = parseFloat(document.getElementById('discount').value) || 0;
-    const taxPercent = parseFloat(document.getElementById('tax').value) || 0;
-
-    const discounted = Math.max(subtotal - discount, 0);
-    const taxAmount = (discounted * taxPercent) / 100;
-    const total = discounted + taxAmount;
-
-    document.getElementById('total').value = total.toFixed(2);
-  }
-
-  function generateInvoice() {
-    if (!document.getElementById('invoice-form').checkValidity()) {
-      alert('Please fill all required fields correctly.');
-      return;
-    }
-    calculateTotals();
-
-    const invoiceNumber = document.getElementById('invoice-number').value;
-    const invoiceDate = document.getElementById('invoice-date').value;
-    const customerName = document.getElementById('customer-name').value.trim();
-    const customerPhone = document.getElementById('customer-phone').value.trim();
-    const customerInfo = `${customerName} | ${customerPhone}`;
-
-    const prices = document.querySelectorAll('.price');
-    const quantities = document.querySelectorAll('.quantity');
-    const items = document.querySelectorAll('.item-name');
-
-    let itemsHTML = '';
-    for (let i = 0; i < items.length; i++) {
-      const itemName = items[i].value;
-      const price = parseFloat(prices[i].value).toFixed(2);
-      const qty = quantities[i].value;
-      const total = (price * qty).toFixed(2);
-
-      itemsHTML += `
+    <table class="invoice-table" id="invoice-table">
+      <thead>
         <tr>
-          <td>${itemName}</td>
-          <td class="price">MVR ${price}</td>
-          <td class="quantity">${qty}</td>
-          <td class="total">MVR ${total}</td>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>Rate (MVR)</th>
+          <th>Subtotal (MVR)</th>
         </tr>
+      </thead>
+      <tbody id="items">
+        <tr>
+          <td>
+            <select onchange="setPrice(this)">
+              <option disabled selected>Select Item</option>
+              <option value="225">Amber Leaf</option>
+              <option value="50">Filter Box</option>
+              <option value="20">Rolling Paper</option>
+            </select>
+          </td>
+          <td><input type="number" value="1" onchange="updateRow(this)"></td>
+          <td><input type="number" value="0" readonly></td>
+          <td class="total">0.00</td>
+        </tr>
+      </tbody>
+    </table>
+    <button onclick="addRow()">+ Add Item</button>
+
+    <div class="totals">
+      <p>Subtotal: MVR <span id="subtotal">0.00</span></p>
+      <p>GST (%): <input type="number" id="gst" value="0" oninput="updateTotals()" style="width:60px;">%</p>
+      <p><strong>Grand Total: MVR <span id="grand-total">0.00</span></strong></p>
+    </div>
+
+    <div class="bank-info">
+      <strong>Bank Details:</strong><br>
+      Maldives Islamic Bank<br>
+      Akk Maldives<br>
+      99010310011996100 (MVR)
+    </div>
+
+    <div class="actions">
+      <button class="create" onclick="createInvoice()">Create Invoice</button>
+    </div>
+
+    <div class="footer">
+      <strong>BitsyBox</strong>
+      Thank you for your business!
+    </div>
+  </div>
+
+  <!-- INVOICE PREVIEW SECTION -->
+  <div class="container" id="invoice-preview" style="display: none;">
+    <header style="text-align: center;">
+      <img src="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo1.png?raw=true" alt="Logo" style="max-width: 150px;">
+      <h1>BitsyBox Invoice</h1>
+    </header>
+
+    <div id="rendered-invoice-content" style="font-size: 14px;"></div>
+  </div>
+
+  <script>
+    function addRow() {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>
+          <select onchange="setPrice(this)">
+            <option disabled selected>Select Item</option>
+            <option value="225">Amber Leaf</option>
+            <option value="50">Filter Box</option>
+            <option value="20">Rolling Paper</option>
+          </select>
+        </td>
+        <td><input type="number" value="1" onchange="updateRow(this)"></td>
+        <td><input type="number" value="0" readonly></td>
+        <td class="total">0.00</td>`;
+      document.getElementById('items').appendChild(row);
+    }
+
+    function setPrice(select) {
+      const price = +select.value;
+      const row = select.closest('tr');
+      row.querySelector('td:nth-child(3) input').value = price;
+      updateRow(row.querySelector('td:nth-child(2) input'));
+    }
+
+    function updateRow(qtyInput) {
+      const row = qtyInput.closest('tr');
+      const qty = +qtyInput.value;
+      const price = +row.querySelector('td:nth-child(3) input').value;
+      const total = (qty * price).toFixed(2);
+      row.querySelector('.total').innerText = total;
+      updateTotals();
+    }
+
+    function updateTotals() {
+      let subtotal = 0;
+      document.querySelectorAll('.total').forEach(cell => {
+        subtotal += +cell.innerText;
+      });
+      const gstRate = parseFloat(document.getElementById('gst').value || 0);
+      const gstAmount = subtotal * (gstRate / 100);
+      const grandTotal = subtotal + gstAmount;
+      document.getElementById('subtotal').innerText = subtotal.toFixed(2);
+      document.getElementById('grand-total').innerText = grandTotal.toFixed(2);
+    }
+
+    function createInvoice() {
+      const customer = document.getElementById('customer-name').value;
+      const contact = document.getElementById('customer-contact').value;
+      const gstRate = parseFloat(document.getElementById('gst').value || 0);
+      const items = [];
+
+      document.querySelectorAll('#items tr').forEach(row => {
+        const itemName = row.querySelector('select')?.selectedOptions[0]?.text || '';
+        const qty = row.querySelector('td:nth-child(2) input').value;
+        const rate = row.querySelector('td:nth-child(3) input').value;
+        const total = row.querySelector('td:nth-child(4)').innerText;
+        if (itemName) {
+          items.push({ itemName, qty, rate, total });
+        }
+      });
+
+      const subtotal = parseFloat(document.getElementById('subtotal').innerText || 0);
+      const total = parseFloat(document.getElementById('grand-total').innerText || 0);
+      const gstAmount = subtotal * (gstRate / 100);
+
+      const renderedHTML = `
+        <div style="padding: 10px;">
+          <p><strong>Customer:</strong> ${customer}</p>
+          <p><strong>Contact:</strong> ${contact}</p>
+
+          <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <thead>
+              <tr style="background: #0a194f; color: white;">
+                <th style="padding: 8px; text-align:left;">Item</th>
+                <th style="padding: 8px;">Qty</th>
+                <th style="padding: 8px;">Rate (MVR)</th>
+                <th style="padding: 8px;">Subtotal (MVR)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${items.map(i => `
+                <tr>
+                  <td style="padding: 8px;">${i.itemName}</td>
+                  <td style="padding: 8px; text-align:center;">${i.qty}</td>
+                  <td style="padding: 8px; text-align:right;">${parseFloat(i.rate).toFixed(2)}</td>
+                  <td style="padding: 8px; text-align:right;">${parseFloat(i.total).toFixed(2)}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+
+          <div style="width: 100%; display: flex; justify-content: flex-end; margin-top: 20px;">
+            <div style="max-width: 300px; text-align: right;">
+              <p><strong>Subtotal:</strong> MVR ${subtotal.toFixed(2)}</p>
+              <p><strong>GST (${gstRate}%):</strong> MVR ${gstAmount.toFixed(2)}</p>
+              <p><strong>Grand Total:</strong> MVR ${total.toFixed(2)}</p>
+            </div>
+          </div>
+
+          <div style="margin-top: 20px;">
+            <strong>Bank Details:</strong><br>
+            Maldives Islamic Bank<br>
+            Akk Maldives<br>
+            99010310011996100
+          </div>
+
+          <div style="margin-top: 20px; text-align:center;">
+            <strong>BitsyBox</strong><br>
+            Thank you for your business!
+          </div>
+        </div>
       `;
+
+      document.getElementById('rendered-invoice-content').innerHTML = renderedHTML;
+      document.getElementById('form-container').style.display = 'none';
+      document.getElementById('invoice-preview').style.display = 'block';
     }
-
-    const subtotal = document.getElementById('subtotal').value;
-    const discount = document.getElementById('discount').value || "0.00";
-    const taxPercent = document.getElementById('tax').value;
-    const taxAmount = ((subtotal - discount) * taxPercent / 100).toFixed(2);
-    const total = document.getElementById('total').value;
-
-    const invoiceOutput = document.getElementById('invoice-output');
-
-    invoiceOutput.innerHTML = `
-      <div class="invoice-header">
-        <img class="company-logo" src="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo1.png?raw=true" alt="BitsyBox Logo" />
-        <div class="company-info">
-          <div>H.Gadhage, Male' City</div>
-          <div>+960 737-1611</div>
-          <div><small>GST: Fixed</small></div>
-        </div>
-      </div>
-
-      <div class="invoice-details">
-        <div class="customer-info">
-          <strong>Customer:</strong> ${customerInfo}
-        </div>
-        <div>
-          <div><strong>Invoice #:</strong> ${invoiceNumber}</div>
-          <div><strong>Date:</strong> ${invoiceDate}</div>
-        </div>
-      </div>
-
-      <table class="invoice-table" cellspacing="0" cellpadding="0">
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th>Price</th>
-            <th>Qty</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${itemsHTML}
-        </tbody>
-      </table>
-
-      <div class="summary">
-        <div><span>Subtotal:</span><span>MVR ${subtotal}</span></div>
-        <div><span>Discount:</span><span>MVR ${parseFloat(discount).toFixed(2)}</span></div>
-        <div><span>Tax (GST ${taxPercent}%):</span><span>MVR ${taxAmount}</span></div>
-        <div class="total"><span>Total:</span><span>MVR ${total}</span></div>
-      </div>
-
-      <div class="invoice-footer">
-        <div><strong>Bank Details:</strong></div>
-        <div>Bank: Maldives Islamic Bank</div>
-        <div>Account Name: BitsyBox Pvt Ltd</div>
-        <div>Account Number: 1234567890</div>
-        <div>IBAN: MV12MIBK0001234567890</div>
-      </div>
-    `;
-
-    invoiceOutput.style.display = 'block';
-  }
-
-  function downloadInvoice() {
-    const invoiceOutput = document.getElementById('invoice-output');
-    if (!invoiceOutput.innerHTML.trim()) {
-      alert('Please generate the invoice first.');
-      return;
-    }
-    html2canvas(invoiceOutput).then(canvas => {
-      const link = document.createElement('a');
-      link.download = `invoice_${document.getElementById('invoice-number').value}.png`;
-      link.href = canvas.toDataURL();
-      link.click();
-    });
-  }
-
-  function shareWhatsApp() {
-    const invoiceOutput = document.getElementById('invoice-output');
-    if (!invoiceOutput.innerHTML.trim()) {
-      alert('Please generate the invoice first.');
-      return;
-    }
-
-    html2canvas(invoiceOutput).then(canvas => {
-      const link = document.createElement('a');
-      const invoiceNumber = document.getElementById('invoice-number').value;
-      link.download = `invoice_${invoiceNumber}.png`;
-      link.href = canvas.toDataURL();
-      link.click();
-
-      let message = `Invoice #${invoiceNumber}%0A`;
-      message += `Date: ${document.getElementById('invoice-date').value}%0A`;
-      message += `Customer: ${document.getElementById('customer-name').value.trim()} | ${document.getElementById('customer-phone').value.trim()}%0A%0AItems:%0A`;
-
-      const items = document.querySelectorAll('.item-name
-');
-const prices = document.querySelectorAll('.price');
-const quantities = document.querySelectorAll('.quantity');
-  for (let i = 0; i < items.length; i++) {
-    message += `- ${items[i].value}: ${prices[i].value} MVR x ${quantities[i].value}%0A`;
-  }
-
-  message += `%0ASubtotal: MVR ${document.getElementById('subtotal').value}%0A`;
-  message += `Discount: MVR ${document.getElementById('discount').value || '0.00'}%0A`;
-  message += `Tax: MVR ${((parseFloat(document.getElementById('subtotal').value) - parseFloat(document.getElementById('discount').value || 0)) * parseFloat(document.getElementById('tax').value)/100).toFixed(2)}%0A`;
-  message += `Total: MVR ${document.getElementById('total').value}`;
-
-  const whatsappURL = `https://wa.me/?text=${message}`;
-  window.open(whatsappURL, '_blank');
-});
-}
-
-document.getElementById('discount').addEventListener('input', calculateTotals);
-document.getElementById('tax').addEventListener('input', calculateTotals);
-document.getElementById('items-list').addEventListener('input', e => {
-if (e.target.classList.contains('price') || e.target.classList.contains('quantity')) {
-calculateTotals();
-}
-});
-
-window.onload = () => {
-initInvoice();
-addItem();
-calculateTotals();
-};
-</script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script> </body> </html> ```
+  </script>
+</body>
+</html>
