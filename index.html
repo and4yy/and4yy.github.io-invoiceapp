@@ -143,41 +143,42 @@
     </header>
     <div id="rendered-invoice-content" style="font-size: 14px;"></div>
   </div>
-<script>
-async function shareInvoiceImage() {
-  const invoiceElement = document.getElementById('invoice-preview');
-  const downloadBtn = document.getElementById('download-btn');
+<script type="module">
+  import html2canvas from 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm';
 
-  // Hide button from screenshot
-  downloadBtn.style.display = 'none';
+  async function shareInvoice() {
+    const invoiceElement = document.getElementById('invoice-preview');
+    const shareBtn = document.getElementById('share-btn');
+    shareBtn.style.display = 'none';
 
-  const canvas = await html2canvas(invoiceElement);
-  downloadBtn.style.display = 'inline-block';
+    try {
+      const canvas = await html2canvas(invoiceElement);
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const file = new File([blob], 'invoice.png', { type: 'image/png' });
 
-  canvas.toBlob(async (blob) => {
-    const file = new File([blob], 'invoice.png', { type: 'image/png' });
-
-    // Check if Web Share API with file support is available
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
+      // Check if native file sharing is supported
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
-          title: 'Invoice',
-          text: 'Here is your invoice.',
+          title: 'Invoice from BitsyBox',
+          text: 'Please find the invoice attached.',
           files: [file],
         });
-        console.log('Shared successfully');
-      } catch (error) {
-        alert('Sharing failed: ' + error.message);
+      } else {
+        // Fallback for iOS/unsupported
+        const imageURL = URL.createObjectURL(blob);
+        const newTab = window.open();
+        newTab.document.write(`<img src="${imageURL}" style="width:100%; max-width:800px;" />`);
+        newTab.document.title = "Invoice Preview";
+        alert("Invoice opened in a new tab. Tap and hold the image to save or share.");
       }
-    } else {
-      alert('Sharing not supported on this device or browser.');
+    } catch (err) {
+      console.error('Share failed:', err);
+      alert('Invoice sharing failed. Please try again.');
+    } finally {
+      shareBtn.style.display = 'inline-block';
     }
-  }, 'image/png');
-}
+  }
 </script>
-
-
-
 
   <script>
     const firebaseConfig = {
@@ -329,8 +330,8 @@ async function shareInvoiceImage() {
   onmouseover="this.style.backgroundColor='#14286f'"
   onmouseout="this.style.backgroundColor='#0a194f'"
 >
-  Share Invoice
-</button>
+<button id="share-btn" onclick="shareInvoice()">Share Invoice</button>
+
 
     </div>
 		</div>
