@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Saved Invoices | BitsyBox</title>
+  <title> Invoices | BitsyBox</title>
   <link rel="icon" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo1.png?raw=true" />
   <style>
     body {
@@ -60,7 +60,7 @@
   <div class="container">
     <header>
       <img src="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo.png?raw=true" alt="BitsyBox Logo" />
-      <h1>Saved Invoices</h1>
+      <h1>Invoices Data</h1>
     </header>
 
     <a class="back-link" href="index.html">&larr; Back to Home</a>
@@ -88,13 +88,14 @@
     import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-lite.js";
 
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MSG_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
+  apiKey: "AIzaSyDZ55PBJJXOUTRDT5V_Lph5uJnor3oH5DA",
+  authDomain: "invoiceapp-8591d.firebaseapp.com",
+  databaseURL: "https://invoiceapp-8591d-default-rtdb.firebaseio.com",
+  projectId: "invoiceapp-8591d",
+  storageBucket: "invoiceapp-8591d.firebasestorage.app",
+  messagingSenderId: "515462960884",
+  appId: "1:515462960884:web:91c194269d7c7d12f070a1"
+};
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
