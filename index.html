@@ -98,7 +98,38 @@
       <button class="create" onclick="createInvoice()">Create Invoice</button>
       <button class="share" onclick="shareViaWhatsApp()">Share via WhatsApp</button>
     </div>
-<a href="invoices.html" style="display:block; text-align:center; margin-top:20px; font-weight:bold; color:#0a194f;">📄 View Saved Invoices</a>
+<a href="invoices.html" style="
+  display: inline-block;
+  background-color: #0a194f;
+  color: white;
+  padding: 14px 24px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  margin: 20px auto;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: background-color 0.3s, transform 0.2s;
+">
+  Saved Invoices
+</a>
+
+<style>
+  a[href="invoices.html"]:hover {
+    background-color: #1e2d70;
+    transform: scale(1.02);
+  }
+
+  @media (max-width: 600px) {
+    a[href="invoices.html"] {
+      display: block;
+      width: 90%;
+      padding: 14px 0;
+      font-size: 18px;
+    }
+  }
+</style>
 
     <div class="footer">
       <strong>BitsyBox</strong>
