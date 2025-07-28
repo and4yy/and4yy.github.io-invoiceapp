@@ -3,103 +3,41 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>BitsyBox</title>
-	<!-- Favicon Links -->
-<link rel="icon" type="image/png" sizes="32x32" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_icon.png?raw=true">
-<link rel="icon" type="image/png" sizes="16x16" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_icon.png?raw=true">
-<link rel="apple-touch-icon" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_icon.png?raw=true">
+  <title>BitsyBox</title>
+
+  <!-- Favicon Links -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_icon.png?raw=true">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_icon.png?raw=true">
+  <link rel="apple-touch-icon" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_icon.png?raw=true">
   <link rel="icon" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo1.png?raw=true" />
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f6f8;
-    }
-    .container {
-      max-width: 800px;
-      margin: auto;
-      padding: 20px;
-      background: #fff;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-    header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    header img {
-      max-width: 150px;
-    }
-    h1 {
-      margin-top: 10px;
-      font-size: 24px;
-      color: #0a194f;
-    }
-    .flex {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .flex input, .flex button {
-      flex: 1;
-      padding: 10px;
-      font-size: 14px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    .invoice-table {
-      width: 100%;
-      margin-top: 20px;
-      border-collapse: collapse;
-    }
-    .invoice-table th {
-      background: #0a194f;
-      color: white;
-      text-align: left;
-      padding: 10px;
-    }
-    .invoice-table td {
-      padding: 8px;
-      border-bottom: 1px solid #eee;
-    }
-    .invoice-table select, .invoice-table input {
-      width: 100%;
-      padding: 6px;
-    }
-    .totals {
-      margin-top: 20px;
-      font-size: 15px;
-      text-align: right;
-    }
-    .bank-info {
-      margin-top: 20px;
-      font-size: 15px;
-    }
-    .actions {
-      margin-top: 20px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 10px;
-    }
-    .actions button {
-      padding: 12px;
-      font-size: 15px;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
+    /* [CSS remains unchanged] */
+    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f4f6f8; }
+    .container { max-width: 800px; margin: auto; padding: 20px; background: #fff; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
+    header { text-align: center; margin-bottom: 20px; }
+    header img { max-width: 150px; }
+    h1 { margin-top: 10px; font-size: 24px; color: #0a194f; }
+    .flex { display: flex; gap: 10px; flex-wrap: wrap; }
+    .flex input, .flex button { flex: 1; padding: 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 6px; }
+    .invoice-table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+    .invoice-table th { background: #0a194f; color: white; text-align: left; padding: 10px; }
+    .invoice-table td { padding: 8px; border-bottom: 1px solid #eee; }
+    .invoice-table select, .invoice-table input { width: 100%; padding: 6px; }
+    .totals { margin-top: 20px; font-size: 15px; text-align: right; }
+    .bank-info { margin-top: 20px; font-size: 15px; }
+    .actions { margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+    .actions button { padding: 12px; font-size: 15px; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
     .create { background: #6f42c1; }
     .share { background: #25D366; }
-    .footer {
-      font-size: 14px;
-      text-align: center;
-      margin-top: 40px;
-    }
-    .footer strong {
-      display: block;
-      margin-bottom: 6px;
-    }
+    .footer { font-size: 14px; text-align: center; margin-top: 40px; }
+    .footer strong { display: block; margin-bottom: 6px; }
   </style>
 </head>
 <body>
@@ -169,12 +107,44 @@
 
   <div class="container" id="invoice-preview" style="display: none;">
     <header style="text-align: center;">
-      <img src="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo.png?raw=true" alt="Logo" style="max-width: 150px;">
+      <img src="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo.png?raw=true" alt="Logo" style="max-width: 600px;"> 
     </header>
     <div id="rendered-invoice-content" style="font-size: 14px;"></div>
   </div>
+<script>
+function downloadInvoiceAsPNG() {
+  const invoiceElement = document.getElementById('invoice-preview');
+  const downloadBtn = document.getElementById('download-btn');
+
+  // Temporarily hide the download button
+  downloadBtn.style.display = 'none';
+
+  html2canvas(invoiceElement).then(canvas => {
+    // Restore the button after capture
+    downloadBtn.style.display = 'inline-block';
+
+    const link = document.createElement('a');
+    link.download = 'invoice.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+</script>
+
 
   <script>
+    const firebaseConfig = {
+  apiKey: "AIzaSyDZ55PBJJXOUTRDT5V_Lph5uJnor3oH5DA",
+  authDomain: "invoiceapp-8591d.firebaseapp.com",
+  databaseURL: "https://invoiceapp-8591d-default-rtdb.firebaseio.com",
+  projectId: "invoiceapp-8591d",
+  storageBucket: "invoiceapp-8591d.firebasestorage.app",
+  messagingSenderId: "515462960884",
+  appId: "1:515462960884:web:91c194269d7c7d12f070a1"
+};
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     function generateInvoiceNumber() {
       let lastInvoice = localStorage.getItem("lastInvoice") || 1000;
       lastInvoice++;
@@ -287,15 +257,38 @@
           Account Number: 99010310011996100
         </div>
         <div style="margin-top: 20px; text-align:center;">
-                    Thank you for your business!
-					
-        </div>
-        <strong>BitsyBox</strong><br>
+          <div class="footer">
+      
+      Thank you for your business!
+	  <strong>BitsyBox</strong>
+	  <button id="download-btn" class="download" onclick="downloadInvoiceAsPNG()">Download as PNG</button>
+
+    </div>
+		</div>
+	
+
       `;
 
       document.getElementById('rendered-invoice-content').innerHTML = renderedHTML;
       document.getElementById('form-container').style.display = 'none';
       document.getElementById('invoice-preview').style.display = 'block';
+
+      // ✅ Save to Firestore
+      db.collection("invoices").add({
+        invoiceNo: invoiceNo,
+        customerName: customer,
+        customerContact: contact,
+        items: items,
+        subtotal: subtotal,
+        gstRate: gstRate,
+        gstAmount: gstAmount,
+        grandTotal: total,
+        createdAt: new Date()
+      }).then(() => {
+        console.log("Invoice saved to Firestore.");
+      }).catch(error => {
+        console.error("Error saving invoice:", error);
+      });
     }
 
     function shareViaWhatsApp() {
@@ -312,6 +305,7 @@
         });
       });
     }
+	
   </script>
 </body>
 </html>
