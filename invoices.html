@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title> Invoices | BitsyBox</title>
+  <title>Invoices | BitsyBox</title>
   <link rel="icon" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo1.png?raw=true" />
   <style>
     body {
@@ -76,47 +76,53 @@
         </tr>
       </thead>
       <tbody>
-        <!-- Data will be inserted here -->
+        <!-- Invoice rows inserted here -->
       </tbody>
     </table>
   </div>
 
-  <!-- Firebase + Firestore SDK -->
+  <!-- Firebase SDK -->
   <script type="module">
-    // Firebase configuration (use your real config)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-lite.js";
+    import { getFirestore, collection, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
-  apiKey: "AIzaSyDZ55PBJJXOUTRDT5V_Lph5uJnor3oH5DA",
-  authDomain: "invoiceapp-8591d.firebaseapp.com",
-  databaseURL: "https://invoiceapp-8591d-default-rtdb.firebaseio.com",
-  projectId: "invoiceapp-8591d",
-  storageBucket: "invoiceapp-8591d.firebasestorage.app",
-  messagingSenderId: "515462960884",
-  appId: "1:515462960884:web:91c194269d7c7d12f070a1"
-};
+      apiKey: "AIzaSyDZ55PBJJXOUTRDT5V_Lph5uJnor3oH5DA",
+      authDomain: "invoiceapp-8591d.firebaseapp.com",
+      projectId: "invoiceapp-8591d",
+      storageBucket: "invoiceapp-8591d.appspot.com",  // FIXED
+      messagingSenderId: "515462960884",
+      appId: "1:515462960884:web:91c194269d7c7d12f070a1"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
     async function loadInvoices() {
-      const snapshot = await getDocs(collection(db, "invoices"));
-      const tbody = document.querySelector("#invoice-table tbody");
-      tbody.innerHTML = "";
+      try {
+        const snapshot = await getDocs(collection(db, "invoices"));
+        const tbody = document.querySelector("#invoice-table tbody");
+        tbody.innerHTML = "";
 
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${data.invoiceNo || "-"}</td>
-          <td>${data.customer || "-"}</td>
-          <td>${data.contact || "-"}</td>
-          <td style="text-align: right;">${data.grandTotal?.toFixed(2) || "0.00"}</td>
-          <td>${new Date(data.createdAt).toLocaleDateString()}</td>
-        `;
-        tbody.appendChild(row);
-      });
+        snapshot.forEach(doc => {
+          const data = doc.data();
+
+          const createdAt = data.createdAt?.toDate?.() || new Date();  // Handles Firestore Timestamp
+          const formattedDate = createdAt.toLocaleDateString();
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${data.invoiceNo || "-"}</td>
+            <td>${data.customerName || "-"}</td>
+            <td>${data.customerContact || "-"}</td>
+            <td style="text-align: right;">${(data.grandTotal || 0).toFixed(2)}</td>
+            <td>${formattedDate}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        console.error("Error loading invoices:", err);
+      }
     }
 
     document.addEventListener("DOMContentLoaded", loadInvoices);
