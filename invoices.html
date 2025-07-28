@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Saved Invoices | BitsyBox</title>
+  <link rel="icon" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo1.png?raw=true" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6f8;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+      background: #fff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    header img {
+      max-width: 150px;
+    }
+    h1 {
+      font-size: 22px;
+      color: #0a194f;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead {
+      background-color: #0a194f;
+      color: white;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    td {
+      font-size: 14px;
+    }
+    a.back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: #6f42c1;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    a.back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <img src="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo.png?raw=true" alt="BitsyBox Logo" />
+      <h1>Saved Invoices</h1>
+    </header>
+
+    <a class="back-link" href="index.html">&larr; Back to Home</a>
+
+    <table id="invoice-table">
+      <thead>
+        <tr>
+          <th>Invoice No</th>
+          <th>Customer</th>
+          <th>Contact</th>
+          <th>Total (MVR)</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Data will be inserted here -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Firebase + Firestore SDK -->
+  <script type="module">
+    // Firebase configuration (use your real config)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-lite.js";
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MSG_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function loadInvoices() {
+      const snapshot = await getDocs(collection(db, "invoices"));
+      const tbody = document.querySelector("#invoice-table tbody");
+      tbody.innerHTML = "";
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${data.invoiceNo || "-"}</td>
+          <td>${data.customer || "-"}</td>
+          <td>${data.contact || "-"}</td>
+          <td style="text-align: right;">${data.grandTotal?.toFixed(2) || "0.00"}</td>
+          <td>${new Date(data.createdAt).toLocaleDateString()}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", loadInvoices);
+  </script>
+</body>
+</html>
