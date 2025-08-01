@@ -47,12 +47,60 @@
     a.back-link {
       display: inline-block;
       margin-bottom: 20px;
-      color: #6f42c1;
+      background: #6f42c1;
+      color: white;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-weight: 500;
       text-decoration: none;
-      font-weight: bold;
+      transition: background 0.3s ease;
     }
     a.back-link:hover {
-      text-decoration: underline;
+      background: #5633a6;
+    }
+    button.download-btn {
+      background: #0a194f;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    @media (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      thead tr {
+        display: none;
+      }
+      tr {
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 10px;
+        background: #fafafa;
+      }
+      td {
+        padding: 8px 10px;
+        border: none;
+        position: relative;
+        padding-left: 50%;
+      }
+      td::before {
+        position: absolute;
+        top: 8px;
+        left: 10px;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: bold;
+        color: #0a194f;
+      }
+      td:nth-of-type(1)::before { content: "Invoice No"; }
+      td:nth-of-type(2)::before { content: "Customer"; }
+      td:nth-of-type(3)::before { content: "Contact"; }
+      td:nth-of-type(4)::before { content: "Total (MVR)"; }
+      td:nth-of-type(5)::before { content: "Date"; }
+      td:nth-of-type(6)::before { content: "Download"; }
     }
   </style>
 </head>
@@ -73,24 +121,25 @@
           <th>Contact</th>
           <th>Total (MVR)</th>
           <th>Date</th>
+          <th>Download</th>
         </tr>
       </thead>
-      <tbody>
-        <!-- Invoice rows inserted here -->
-      </tbody>
+      <tbody></tbody>
     </table>
   </div>
 
-  <!-- Firebase SDK -->
+  <div id="hidden-invoice" style="display:none;"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDZ55PBJJXOUTRDT5V_Lph5uJnor3oH5DA",
       authDomain: "invoiceapp-8591d.firebaseapp.com",
       projectId: "invoiceapp-8591d",
-      storageBucket: "invoiceapp-8591d.appspot.com",  // FIXED
+      storageBucket: "invoiceapp-8591d.appspot.com",
       messagingSenderId: "515462960884",
       appId: "1:515462960884:web:91c194269d7c7d12f070a1"
     };
@@ -99,30 +148,68 @@
     const db = getFirestore(app);
 
     async function loadInvoices() {
-      try {
-        const snapshot = await getDocs(collection(db, "invoices"));
-        const tbody = document.querySelector("#invoice-table tbody");
-        tbody.innerHTML = "";
+      const snapshot = await getDocs(collection(db, "invoices"));
+      const tbody = document.querySelector("#invoice-table tbody");
+      tbody.innerHTML = "";
 
-        snapshot.forEach(doc => {
-          const data = doc.data();
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const createdAt = data.createdAt?.toDate?.() || new Date();
+        const formattedDate = createdAt.toLocaleDateString();
 
-          const createdAt = data.createdAt?.toDate?.() || new Date();  // Handles Firestore Timestamp
-          const formattedDate = createdAt.toLocaleDateString();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${data.invoiceNo || "-"}</td>
+          <td>${data.customerName || "-"}</td>
+          <td>${data.customerContact || "-"}</td>
+          <td style="text-align: right;">${(data.grandTotal || 0).toFixed(2)}</td>
+          <td>${formattedDate}</td>
+          <td><button class="download-btn" onclick='downloadInvoice(${JSON.stringify(data)})'>📄 Download</button></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
 
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${data.invoiceNo || "-"}</td>
-            <td>${data.customerName || "-"}</td>
-            <td>${data.customerContact || "-"}</td>
-            <td style="text-align: right;">${(data.grandTotal || 0).toFixed(2)}</td>
-            <td>${formattedDate}</td>
-          `;
-          tbody.appendChild(row);
-        });
-      } catch (err) {
-        console.error("Error loading invoices:", err);
-      }
+    window.downloadInvoice = async function(data) {
+      const container = document.getElementById('hidden-invoice');
+      const items = data.items || [];
+      container.innerHTML = `
+        <div style="font-family:Segoe UI,sans-serif; padding:20px; width:600px; background:white; border:1px solid #ddd;">
+          <div style="text-align:center; margin-bottom:10px;">
+            <img src="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo.png?raw=true" style="max-width:180px;" />
+            <h2 style="margin: 10px 0 0; color:#0a194f;">Invoice</h2>
+          </div>
+          <p><strong>Invoice No:</strong> ${data.invoiceNo}</p>
+          <p><strong>Customer:</strong> ${data.customerName}</p>
+          <p><strong>Contact:</strong> ${data.customerContact}</p>
+          <table style="width:100%; border-collapse:collapse; margin-top:10px;">
+            <thead style="background:#0a194f; color:white;">
+              <tr><th style="padding:6px;">Item</th><th>Qty</th><th>Rate</th><th>Subtotal</th></tr>
+            </thead>
+            <tbody>
+              ${items.map(i => `
+                <tr style="border-bottom:1px solid #eee;">
+                  <td style="padding:6px;">${i.itemName}</td>
+                  <td style="text-align:center;">${i.qty}</td>
+                  <td style="text-align:right;">${parseFloat(i.rate).toFixed(2)}</td>
+                  <td style="text-align:right;">${parseFloat(i.total).toFixed(2)}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+          <div style="margin-top:10px; text-align:right;">
+            <p><strong>Subtotal:</strong> MVR ${data.subtotal?.toFixed(2) || '0.00'}</p>
+            <p><strong>GST (${data.gstRate}%):</strong> MVR ${data.gstAmount?.toFixed(2) || '0.00'}</p>
+            <p><strong>Total:</strong> MVR ${data.grandTotal?.toFixed(2) || '0.00'}</p>
+          </div>
+          <p style="margin-top:20px; text-align:center;">Thank you for your business!<br><strong>BitsyBox</strong></p>
+        </div>
+      `;
+
+      const canvas = await html2canvas(container.firstElementChild);
+      const link = document.createElement('a');
+      link.download = `${data.invoiceNo || 'invoice'}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
     }
 
     document.addEventListener("DOMContentLoaded", loadInvoices);
