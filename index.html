@@ -9,7 +9,6 @@
   <link rel="icon" type="image/png" sizes="32x32" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_icon.png?raw=true">
   <link rel="icon" type="image/png" sizes="16x16" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_icon.png?raw=true">
   <link rel="apple-touch-icon" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_icon.png?raw=true">
-  <link rel="icon" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo1.png?raw=true" />
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
@@ -18,7 +17,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
 
   <style>
-    /* [CSS remains unchanged] */
     body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f4f6f8; }
     .container { max-width: 800px; margin: auto; padding: 20px; background: #fff; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
     header { text-align: center; margin-bottom: 20px; }
@@ -31,13 +29,26 @@
     .invoice-table td { padding: 8px; border-bottom: 1px solid #eee; }
     .invoice-table select, .invoice-table input { width: 100%; padding: 6px; }
     .totals { margin-top: 20px; font-size: 15px; text-align: right; }
-    .bank-info { margin-top: 20px; font-size: 15px; }
     .actions { margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
     .actions button { padding: 12px; font-size: 15px; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
     .create { background: #6f42c1; }
     .share { background: #25D366; }
     .footer { font-size: 14px; text-align: center; margin-top: 40px; }
     .footer strong { display: block; margin-bottom: 6px; }
+    button[onclick="addRow()"] {
+      margin-top: 10px;
+      background: #007bff;
+      color: white;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+    button[onclick="addRow()"]:hover {
+      background-color: #0056b3;
+    }
   </style>
 </head>
 <body>
@@ -79,6 +90,7 @@
         </tr>
       </tbody>
     </table>
+
     <button onclick="addRow()">+ Add Item</button>
 
     <div class="totals">
@@ -87,49 +99,27 @@
       <p><strong>Grand Total: MVR <span id="grand-total">0.00</span></strong></p>
     </div>
 
-    <div class="bank-info">
-      <strong>Bank Details:</strong><br>
-      Maldives Islamic Bank<br>
-      Akk Maldives<br>
-      99010310011996100 (MVR)
-    </div>
-
     <div class="actions">
       <button class="create" onclick="createInvoice()">Create Invoice</button>
       <button class="share" onclick="shareViaWhatsApp()">Share via WhatsApp</button>
     </div>
-<a href="invoices.html" style="
-  display: inline-block;
-  background-color: #0a194f;
-  color: white;
-  padding: 14px 24px;
-  border-radius: 8px;
-  text-align: center;
-  font-size: 16px;
-  font-weight: 600;
-  text-decoration: none;
-  margin: 20px auto;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  transition: background-color 0.3s, transform 0.2s;
-">
-  Saved Invoices
-</a>
 
-<style>
-  a[href="invoices.html"]:hover {
-    background-color: #1e2d70;
-    transform: scale(1.02);
-  }
+    <a href="invoices.html" style="display:inline-block;background-color:#0a194f;color:white;padding:14px 24px;border-radius:8px;text-align:center;font-size:16px;font-weight:600;text-decoration:none;margin:20px auto;box-shadow:0 4px 10px rgba(0,0,0,0.1);transition:background-color 0.3s, transform 0.2s;">Saved Invoices</a>
 
-  @media (max-width: 600px) {
-    a[href="invoices.html"] {
-      display: block;
-      width: 90%;
-      padding: 14px 0;
-      font-size: 18px;
-    }
-  }
-</style>
+    <style>
+      a[href="invoices.html"]:hover {
+        background-color: #1e2d70;
+        transform: scale(1.02);
+      }
+      @media (max-width: 600px) {
+        a[href="invoices.html"] {
+          display: block;
+          width: 90%;
+          padding: 14px 0;
+          font-size: 18px;
+        }
+      }
+    </style>
 
     <div class="footer">
       <strong>BitsyBox</strong>
@@ -139,12 +129,214 @@
 
   <div class="container" id="invoice-preview" style="display: none;">
     <header style="text-align: center;">
-      <img src="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo.png?raw=true" alt="Logo" style="max-width: 300px;"> 
+      <img src="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo1.png?raw=true" alt="Logo" style="max-width: 300px;">
     </header>
     <div id="rendered-invoice-content" style="font-size: 14px;"></div>
+    <div style="text-align:center; margin-top: 20px;">
+      <button onclick="goBack()" style="background:#0a194f; color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer;">Back to Invoice Form</button>
+    </div>
   </div>
-<script type="module">
-  import html2canvas from 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm';
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDZ55PBJJXOUTRDT5V_Lph5uJnor3oH5DA",
+    authDomain: "invoiceapp-8591d.firebaseapp.com",
+    databaseURL: "https://invoiceapp-8591d-default-rtdb.firebaseio.com",
+    projectId: "invoiceapp-8591d",
+    storageBucket: "invoiceapp-8591d.firebasestorage.app",
+    messagingSenderId: "515462960884",
+    appId: "1:515462960884:web:91c194269d7c7d12f070a1"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  function generateInvoiceNumber() {
+    let lastInvoice = localStorage.getItem("lastInvoice") || 1000;
+    lastInvoice++;
+    localStorage.setItem("lastInvoice", lastInvoice);
+    return `INV-${lastInvoice}`;
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("invoice-number").value = generateInvoiceNumber();
+  });
+
+  function addRow() {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>
+        <select onchange="setPrice(this)">
+          <option disabled selected>Select Item</option>
+          <option value="225">Amber Leaf</option>
+          <option value="50">Filter Box</option>
+          <option value="20">Rolling Paper</option>
+        </select>
+      </td>
+      <td><input type="number" value="1" onchange="updateRow(this)"></td>
+      <td><input type="number" value="0" readonly></td>
+      <td class="total">0.00</td>`;
+    document.getElementById('items').appendChild(row);
+  }
+
+  function setPrice(select) {
+    const price = +select.value;
+    const row = select.closest('tr');
+    row.querySelector('td:nth-child(3) input').value = price;
+    updateRow(row.querySelector('td:nth-child(2) input'));
+  }
+
+  function updateRow(qtyInput) {
+    const row = qtyInput.closest('tr');
+    const qty = +qtyInput.value;
+    const price = +row.querySelector('td:nth-child(3) input').value;
+    const total = (qty * price).toFixed(2);
+    row.querySelector('.total').innerText = total;
+    updateTotals();
+  }
+
+  function updateTotals() {
+    let subtotal = 0;
+    document.querySelectorAll('.total').forEach(cell => {
+      subtotal += +cell.innerText;
+    });
+    const gstRate = parseFloat(document.getElementById('gst').value || 0);
+    const gstAmount = subtotal * (gstRate / 100);
+    const grandTotal = subtotal + gstAmount;
+    document.getElementById('subtotal').innerText = subtotal.toFixed(2);
+    document.getElementById('grand-total').innerText = grandTotal.toFixed(2);
+  }
+
+  function createInvoice() {
+    const customer = document.getElementById('customer-name').value;
+    const contact = document.getElementById('customer-contact').value;
+    const gstRate = parseFloat(document.getElementById('gst').value || 0);
+    const invoiceNo = document.getElementById('invoice-number').value;
+    const items = [];
+
+    document.querySelectorAll('#items tr').forEach(row => {
+      const itemName = row.querySelector('select')?.selectedOptions[0]?.text || '';
+      const qty = row.querySelector('td:nth-child(2) input').value;
+      const rate = row.querySelector('td:nth-child(3) input').value;
+      const total = row.querySelector('td:nth-child(4)').innerText;
+      if (itemName) {
+        items.push({ itemName, qty, rate, total });
+      }
+    });
+
+    const subtotal = parseFloat(document.getElementById('subtotal').innerText || 0);
+    const total = parseFloat(document.getElementById('grand-total').innerText || 0);
+    const gstAmount = subtotal * (gstRate / 100);
+
+    const renderedHTML = `
+      <p><strong>Invoice No:</strong> ${invoiceNo}</p>
+      <p><strong>Customer:</strong> ${customer}</p>
+      <p><strong>Contact:</strong> ${contact}</p>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+        <thead>
+          <tr style="background: #0a194f; color: white;">
+            <th style="padding: 8px;">Item</th>
+            <th style="padding: 8px;">Qty</th>
+            <th style="padding: 8px;">Rate (MVR)</th>
+            <th style="padding: 8px;">Subtotal (MVR)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items.map(i => `
+            <tr>
+              <td style="padding: 8px;">${i.itemName}</td>
+              <td style="padding: 8px; text-align:center;">${i.qty}</td>
+              <td style="padding: 8px; text-align:right;">${parseFloat(i.rate).toFixed(2)}</td>
+              <td style="padding: 8px; text-align:right;">${parseFloat(i.total).toFixed(2)}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      <div style="margin-top: 20px; text-align: right;">
+        <p><strong>Subtotal:</strong> MVR ${subtotal.toFixed(2)}</p>
+        <p><strong>GST (${gstRate}%):</strong> MVR ${gstAmount.toFixed(2)}</p>
+        <p><strong>Grand Total:</strong> MVR ${total.toFixed(2)}</p>
+      </div>
+      <div style="margin-top: 20px; text-align:center;">
+        Thank you for your business!
+        <strong>BitsyBox</strong><br>
+<button id="share-btn" onclick="shareInvoice()" style="
+  background: #25D366;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+">📤 Share Invoice</button>
+      </div>
+    `;
+
+    document.getElementById('rendered-invoice-content').innerHTML = renderedHTML;
+    document.getElementById('form-container').style.display = 'none';
+    document.getElementById('invoice-preview').style.display = 'block';
+
+    db.collection("invoices").add({
+      invoiceNo: invoiceNo,
+      customerName: customer,
+      customerContact: contact,
+      items: items,
+      subtotal: subtotal,
+      gstRate: gstRate,
+      gstAmount: gstAmount,
+      grandTotal: total,
+      createdAt: new Date()
+    }).then(() => {
+      console.log("Invoice saved to Firestore.");
+    }).catch(error => {
+      console.error("Error saving invoice:", error);
+    });
+
+    clearForm();
+  }
+
+  function clearForm() {
+    document.getElementById('customer-name').value = '';
+    document.getElementById('customer-contact').value = '';
+    document.getElementById('gst').value = 0;
+    document.getElementById('items').innerHTML = `
+      <tr>
+        <td>
+          <select onchange="setPrice(this)">
+            <option disabled selected>Select Item</option>
+            <option value="225">Amber Leaf</option>
+            <option value="50">Filter Box</option>
+            <option value="20">Rolling Paper</option>
+          </select>
+        </td>
+        <td><input type="number" value="1" onchange="updateRow(this)"></td>
+        <td><input type="number" value="0" readonly></td>
+        <td class="total">0.00</td>
+      </tr>`;
+    updateTotals();
+    document.getElementById("invoice-number").value = generateInvoiceNumber();
+  }
+
+  function goBack() {
+    document.getElementById('invoice-preview').style.display = 'none';
+    document.getElementById('form-container').style.display = 'block';
+  }
+
+  function shareViaWhatsApp() {
+    html2canvas(document.getElementById('invoice-preview')).then(canvas => {
+      canvas.toBlob(blob => {
+        const fakeUploadUrl = 'https://imgur.com/upload-success.png'; // Simulated
+        const customer = document.getElementById('customer-name').value;
+        const invoiceNo = document.getElementById('invoice-number').value;
+        const total = document.getElementById('grand-total').innerText;
+
+        const message = `Hello ${customer},%0AHere is your invoice:%0AInvoice No: ${invoiceNo}%0ATotal: MVR ${total}%0AInvoice Image: ${fakeUploadUrl}`;
+        const whatsappUrl = `https://wa.me/?text=${message}`;
+        window.open(whatsappUrl, '_blank');
+      });
+    });
+  }
 
   async function shareInvoice() {
     const invoiceElement = document.getElementById('invoice-preview');
@@ -156,7 +348,6 @@
       const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
       const file = new File([blob], 'invoice.png', { type: 'image/png' });
 
-      // Check if native file sharing is supported
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           title: 'Invoice from BitsyBox',
@@ -164,7 +355,6 @@
           files: [file],
         });
       } else {
-        // Fallback for iOS/unsupported
         const imageURL = URL.createObjectURL(blob);
         const newTab = window.open();
         newTab.document.write(`<img src="${imageURL}" style="width:100%; max-width:800px;" />`);
@@ -179,182 +369,5 @@
     }
   }
 </script>
-
-  <script>
-    const firebaseConfig = {
-  apiKey: "AIzaSyDZ55PBJJXOUTRDT5V_Lph5uJnor3oH5DA",
-  authDomain: "invoiceapp-8591d.firebaseapp.com",
-  databaseURL: "https://invoiceapp-8591d-default-rtdb.firebaseio.com",
-  projectId: "invoiceapp-8591d",
-  storageBucket: "invoiceapp-8591d.firebasestorage.app",
-  messagingSenderId: "515462960884",
-  appId: "1:515462960884:web:91c194269d7c7d12f070a1"
-};
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    function generateInvoiceNumber() {
-      let lastInvoice = localStorage.getItem("lastInvoice") || 1000;
-      lastInvoice++;
-      localStorage.setItem("lastInvoice", lastInvoice);
-      return `INV-${lastInvoice}`;
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("invoice-number").value = generateInvoiceNumber();
-    });
-
-    function addRow() {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>
-          <select onchange="setPrice(this)">
-            <option disabled selected>Select Item</option>
-            <option value="225">Amber Leaf</option>
-            <option value="50">Filter Box</option>
-            <option value="20">Rolling Paper</option>
-          </select>
-        </td>
-        <td><input type="number" value="1" onchange="updateRow(this)"></td>
-        <td><input type="number" value="0" readonly></td>
-        <td class="total">0.00</td>`;
-      document.getElementById('items').appendChild(row);
-    }
-
-    function setPrice(select) {
-      const price = +select.value;
-      const row = select.closest('tr');
-      row.querySelector('td:nth-child(3) input').value = price;
-      updateRow(row.querySelector('td:nth-child(2) input'));
-    }
-
-    function updateRow(qtyInput) {
-      const row = qtyInput.closest('tr');
-      const qty = +qtyInput.value;
-      const price = +row.querySelector('td:nth-child(3) input').value;
-      const total = (qty * price).toFixed(2);
-      row.querySelector('.total').innerText = total;
-      updateTotals();
-    }
-
-    function updateTotals() {
-      let subtotal = 0;
-      document.querySelectorAll('.total').forEach(cell => {
-        subtotal += +cell.innerText;
-      });
-      const gstRate = parseFloat(document.getElementById('gst').value || 0);
-      const gstAmount = subtotal * (gstRate / 100);
-      const grandTotal = subtotal + gstAmount;
-      document.getElementById('subtotal').innerText = subtotal.toFixed(2);
-      document.getElementById('grand-total').innerText = grandTotal.toFixed(2);
-    }
-
-    function createInvoice() {
-      const customer = document.getElementById('customer-name').value;
-      const contact = document.getElementById('customer-contact').value;
-      const gstRate = parseFloat(document.getElementById('gst').value || 0);
-      const invoiceNo = document.getElementById('invoice-number').value;
-      const items = [];
-
-      document.querySelectorAll('#items tr').forEach(row => {
-        const itemName = row.querySelector('select')?.selectedOptions[0]?.text || '';
-        const qty = row.querySelector('td:nth-child(2) input').value;
-        const rate = row.querySelector('td:nth-child(3) input').value;
-        const total = row.querySelector('td:nth-child(4)').innerText;
-        if (itemName) {
-          items.push({ itemName, qty, rate, total });
-        }
-      });
-
-      const subtotal = parseFloat(document.getElementById('subtotal').innerText || 0);
-      const total = parseFloat(document.getElementById('grand-total').innerText || 0);
-      const gstAmount = subtotal * (gstRate / 100);
-
-      const renderedHTML = `
-        <p><strong>Invoice No:</strong> ${invoiceNo}</p>
-        <p><strong>Customer:</strong> ${customer}</p>
-        <p><strong>Contact:</strong> ${contact}</p>
-        <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-          <thead>
-            <tr style="background: #0a194f; color: white;">
-              <th style="padding: 8px;">Item</th>
-              <th style="padding: 8px;">Qty</th>
-              <th style="padding: 8px;">Rate (MVR)</th>
-              <th style="padding: 8px;">Subtotal (MVR)</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${items.map(i => `
-              <tr>
-                <td style="padding: 8px;">${i.itemName}</td>
-                <td style="padding: 8px; text-align:center;">${i.qty}</td>
-                <td style="padding: 8px; text-align:right;">${parseFloat(i.rate).toFixed(2)}</td>
-                <td style="padding: 8px; text-align:right;">${parseFloat(i.total).toFixed(2)}</td>
-              </tr>`).join('')}
-          </tbody>
-        </table>
-        <div style="margin-top: 20px; text-align: right;">
-          <p><strong>Subtotal:</strong> MVR ${subtotal.toFixed(2)}</p>
-          <p><strong>GST (${gstRate}%):</strong> MVR ${gstAmount.toFixed(2)}</p>
-          <p><strong>Grand Total:</strong> MVR ${total.toFixed(2)}</p>
-        </div>
-        <div style="margin-top: 20px;">
-          <strong>Bank Details:</strong><br>
-          BANK: Maldives Islamic Bank<br>
-          Account Name: AKK MALDIVES<br>
-          Account Number: 99010310011996100
-        </div>
-        <div style="margin-top: 20px; text-align:center;">
-          <div class="footer">
-      
-      Thank you for your business!
-	  <strong>BitsyBox</strong>
-<button id="share-btn" onclick="shareInvoice()">Share Invoice</button>
-
-
-    </div>
-		</div>
-	
-
-      `;
-
-      document.getElementById('rendered-invoice-content').innerHTML = renderedHTML;
-      document.getElementById('form-container').style.display = 'none';
-      document.getElementById('invoice-preview').style.display = 'block';
-
-      // ✅ Save to Firestore
-      db.collection("invoices").add({
-        invoiceNo: invoiceNo,
-        customerName: customer,
-        customerContact: contact,
-        items: items,
-        subtotal: subtotal,
-        gstRate: gstRate,
-        gstAmount: gstAmount,
-        grandTotal: total,
-        createdAt: new Date()
-      }).then(() => {
-        console.log("Invoice saved to Firestore.");
-      }).catch(error => {
-        console.error("Error saving invoice:", error);
-      });
-    }
-
-    function shareViaWhatsApp() {
-      html2canvas(document.getElementById('invoice-preview')).then(canvas => {
-        canvas.toBlob(blob => {
-          const fakeUploadUrl = 'https://imgur.com/upload-success.png'; // Simulated
-          const customer = document.getElementById('customer-name').value;
-          const invoiceNo = document.getElementById('invoice-number').value;
-          const total = document.getElementById('grand-total').innerText;
-
-          const message = `Hello ${customer},%0AHere is your invoice:%0AInvoice No: ${invoiceNo}%0ATotal: MVR ${total}%0AInvoice Image: ${fakeUploadUrl}`;
-          const whatsappUrl = `https://wa.me/?text=${message}`;
-          window.open(whatsappUrl, '_blank');
-        });
-      });
-    }
-	
-  </script>
 </body>
 </html>
