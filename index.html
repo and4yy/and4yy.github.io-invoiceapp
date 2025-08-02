@@ -9,6 +9,7 @@
     <!-- Include html2canvas for converting HTML to an image -->
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <!-- Include Inter font from Google Fonts -->
+    <link rel="apple-touch-icon" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_icon.png?raw=true">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
@@ -87,8 +88,8 @@
                     <input type="text" id="clientName" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-sm" placeholder="Client Name">
                 </div>
                 <div class="flex-1 space-y-2">
-                    <label for="clientContact" class="block text-sm font-medium text-gray-700">Contact Details</label>
-                    <textarea id="clientContact" rows="3" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-sm" placeholder="Client Contact"></textarea>
+                    <label for="clientContact" class="block text-sm font-medium text-gray-700">Contact </label>
+                    <input type="text" id="clientName" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-sm" placeholder="Client Name">
                 </div>
             </div>
         </div>
@@ -423,13 +424,13 @@
                     <!-- Terms and Bank Details -->
                     <div class="mt-8 text-sm p-4 bg-gray-50 rounded-lg border border-gray-200">
                         <div>
-                            <h3 class="font-bold text-gray-700 border-b pb-1">Our Bank details are as Follows:</h3>
+                            <h3 class="font-bold text-gray-700 border-b pb-1">Bank details:</h3>
                             ${filteredBankDetails.map(detail => `<p class="text-gray-600">${detail}</p>`).join('')}
                         </div>
                     </div>
 
                     <div class="text-center mt-8 text-gray-500 text-sm">
-                        Thank you for your business! We are looking forward to serve you again.
+                        Thank you for your business! BitsyBox.
                     </div>
                 </div>
             `;
