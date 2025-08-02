@@ -1,373 +1,643 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BitsyBox</title>
-
-  <!-- Favicon Links -->
-  <link rel="icon" type="image/png" sizes="32x32" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_icon.png?raw=true">
-  <link rel="icon" type="image/png" sizes="16x16" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_icon.png?raw=true">
-  <link rel="apple-touch-icon" href="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_icon.png?raw=true">
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-
-  <style>
-    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f4f6f8; }
-    .container { max-width: 800px; margin: auto; padding: 20px; background: #fff; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
-    header { text-align: center; margin-bottom: 20px; }
-    header img { max-width: 150px; }
-    h1 { margin-top: 10px; font-size: 24px; color: #0a194f; }
-    .flex { display: flex; gap: 10px; flex-wrap: wrap; }
-    .flex input, .flex button { flex: 1; padding: 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 6px; }
-    .invoice-table { width: 100%; margin-top: 20px; border-collapse: collapse; }
-    .invoice-table th { background: #0a194f; color: white; text-align: left; padding: 10px; }
-    .invoice-table td { padding: 8px; border-bottom: 1px solid #eee; }
-    .invoice-table select, .invoice-table input { width: 100%; padding: 6px; }
-    .totals { margin-top: 20px; font-size: 15px; text-align: right; }
-    .actions { margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
-    .actions button { padding: 12px; font-size: 15px; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
-    .create { background: #6f42c1; }
-    .share { background: #25D366; }
-    .footer { font-size: 14px; text-align: center; margin-top: 40px; }
-    .footer strong { display: block; margin-bottom: 6px; }
-    button[onclick="addRow()"] {
-      margin-top: 10px;
-      background: #007bff;
-      color: white;
-      padding: 10px 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: background-color 0.3s ease;
-    }
-    button[onclick="addRow()"]:hover {
-      background-color: #0056b3;
-    }
-  </style>
-</head>
-<body>
-  <div class="container" id="form-container">
-    <header>
-      <img src="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo1.png?raw=true" alt="BitsyBox Logo">
-      <h1>BitsyBox Invoice</h1>
-    </header>
-
-    <input type="hidden" id="invoice-number" />
-
-    <div class="flex">
-      <input type="text" id="customer-name" placeholder="Customer Name">
-      <input type="tel" id="customer-contact" placeholder="Contact Number">
-    </div>
-
-    <table class="invoice-table" id="invoice-table">
-      <thead>
-        <tr>
-          <th>Item</th>
-          <th>Qty</th>
-          <th>Rate (MVR)</th>
-          <th>Subtotal (MVR)</th>
-        </tr>
-      </thead>
-      <tbody id="items">
-        <tr>
-          <td>
-            <select onchange="setPrice(this)">
-              <option disabled selected>Select Item</option>
-              <option value="225">Amber Leaf</option>
-              <option value="50">Filter Box</option>
-              <option value="20">Rolling Paper</option>
-            </select>
-          </td>
-          <td><input type="number" value="1" onchange="updateRow(this)"></td>
-          <td><input type="number" value="0" readonly></td>
-          <td class="total">0.00</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <button onclick="addRow()">+ Add Item</button>
-
-    <div class="totals">
-      <p>Subtotal: MVR <span id="subtotal">0.00</span></p>
-      <p>GST (%): <input type="number" id="gst" value="0" oninput="updateTotals()" style="width:60px;">%</p>
-      <p><strong>Grand Total: MVR <span id="grand-total">0.00</span></strong></p>
-    </div>
-
-    <div class="actions">
-      <button class="create" onclick="createInvoice()">Create Invoice</button>
-      <button class="share" onclick="shareViaWhatsApp()">Share via WhatsApp</button>
-    </div>
-
-    <a href="invoices.html" style="display:inline-block;background-color:#0a194f;color:white;padding:14px 24px;border-radius:8px;text-align:center;font-size:16px;font-weight:600;text-decoration:none;margin:20px auto;box-shadow:0 4px 10px rgba(0,0,0,0.1);transition:background-color 0.3s, transform 0.2s;">Saved Invoices</a>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Generator</title>
+    <!-- Include Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Include html2canvas for converting HTML to an image -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <!-- Include Inter font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-      a[href="invoices.html"]:hover {
-        background-color: #1e2d70;
-        transform: scale(1.02);
-      }
-      @media (max-width: 600px) {
-        a[href="invoices.html"] {
-          display: block;
-          width: 90%;
-          padding: 14px 0;
-          font-size: 18px;
+        /* Apply Inter font to the entire body and other elements */
+        body, h1, h2, h3, h4, h5, h6, p, a, div, span, label, input, textarea, button, table {
+            font-family: 'Inter', sans-serif;
         }
-      }
+
+        /* Hide the invoice container by default, show it only for print/capture */
+        .invoice-container {
+            display: none;
+            margin: 0 auto;
+            padding: 1rem;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .invoice-container.show {
+            display: block;
+        }
+
+        /* Print styles to hide the application UI */
+        @media print {
+            .app-container {
+                display: none;
+            }
+            .invoice-container {
+                display: block !important;
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+        }
+
+        /* Custom styles for modern button animations */
+        .btn {
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Custom gradient for the company name */
+        .company-gradient {
+            background-image: linear-gradient(45deg, #1d4ed8, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
     </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div id="app-container" class="app-container w-full max-w-4xl bg-white rounded-2xl shadow-2xl p-4 md:p-8 space-y-6 md:space-y-10 border border-gray-200">
+        <div class="text-center">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 company-gradient">
+                Invoice Generator
+            </h1>
+            <p class="text-gray-500 mt-2">Create, save, and share professional invoices in minutes.</p>
+        </div>
 
-    <div class="footer">
-      <strong>BitsyBox</strong>
-      Thank you for your business!
+        <!-- Invoice Details Form -->
+        <div class="space-y-6">
+            <h2 class="text-2xl font-bold text-gray-800">Invoice Details</h2>
+            <!-- Client Information on one line -->
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="flex-1 space-y-2">
+                    <label for="clientName" class="block text-sm font-medium text-gray-700">Client Name</label>
+                    <input type="text" id="clientName" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-sm" placeholder="Client Name">
+                </div>
+                <div class="flex-1 space-y-2">
+                    <label for="clientContact" class="block text-sm font-medium text-gray-700">Contact Details</label>
+                    <textarea id="clientContact" rows="3" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-sm" placeholder="Client Contact"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Line Items Section -->
+        <div class="space-y-4 p-4 rounded-lg bg-gray-50 border border-gray-200">
+            <h2 class="text-xl font-bold text-gray-800">Line Items</h2>
+            <div id="line-items" class="space-y-4">
+                <!-- Initial line item -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 items-end line-item">
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="block text-xs font-medium text-gray-700">Description</label>
+                        <input type="text" class="item-description w-full rounded-lg border-gray-300 p-2 text-sm" placeholder="Item Description">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700">Quantity</label>
+                        <input type="number" value="1" min="1" class="item-quantity w-full rounded-lg border-gray-300 p-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700">Price</label>
+                        <input type="number" value="0.00" min="0" step="0.01" class="item-price w-full rounded-lg border-gray-300 p-2 text-sm">
+                    </div>
+                    <div class="flex items-center justify-center">
+                        <button class="remove-line-item-btn text-red-500 hover:text-red-700 transition duration-150 ease-in-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <button id="addLineItemBtn" class="w-full text-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out btn">
+                + Add Line Item
+            </button>
+        </div>
+
+        <!-- Totals Section -->
+        <div class="flex justify-end mt-8">
+            <div class="w-full max-w-xs space-y-4 text-sm p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="flex justify-between font-medium">
+                    <span class="text-gray-700">Subtotal:</span>
+                    <span id="subtotal" class="text-gray-900">MVR 0.00</span>
+                </div>
+                <div class="flex justify-between">
+                    <label for="discount" class="text-gray-700">Discount:</label>
+                    <input type="number" id="discount" value="0.00" min="0" step="0.01" class="w-24 text-right rounded-lg border-gray-300 p-1 text-sm">
+                </div>
+                <div class="flex justify-between">
+                    <label for="taxRate" class="text-gray-700">Tax Rate (%):</label>
+                    <input type="number" id="taxRate" value="0" min="0" max="100" class="w-24 text-right rounded-lg border-gray-300 p-1 text-sm">
+                </div>
+                <div class="flex justify-between font-bold text-lg border-t pt-4 mt-4">
+                    <span class="text-gray-800">Total:</span>
+                    <span id="total" class="text-indigo-600">MVR 0.00</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Additional Notes Section -->
+        <div class="space-y-4">
+            <h2 class="text-xl font-bold text-gray-800">Additional Information</h2>
+            <div>
+                <label for="bankDetails" class="block text-sm font-medium text-gray-700">Bank Details</label>
+                <textarea id="bankDetails" rows="3" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-sm" placeholder="Bank Name: MALDIVES ISLAMIC BANK, Account Number: 99010310011996100 (MVR), Account Name: AKK MALDIVES"></textarea>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4 mt-8">
+            <button id="saveInvoiceBtn" class="py-4 px-8 bg-green-600 text-white font-bold rounded-full shadow-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 btn">
+                Save Invoice
+            </button>
+            <button id="generateInvoiceBtn" class="py-4 px-8 bg-indigo-600 text-white font-bold rounded-full shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50 btn">
+                Generate & Share Invoice
+            </button>
+        </div>
+
+        <!-- Saved Invoices Section -->
+        <div class="mt-12 space-y-4">
+            <h2 class="text-2xl font-bold text-gray-800 border-b pb-2">Saved Invoices</h2>
+            <div id="saved-invoices-list" class="space-y-3 max-h-64 overflow-y-auto border border-gray-200 rounded-xl p-4 bg-gray-50">
+                <p id="loading-message" class="text-gray-500 text-center">Loading saved invoices...</p>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <div class="container" id="invoice-preview" style="display: none;">
-    <header style="text-align: center;">
-      <img src="https://github.com/and4yy/and4yy.github.io/blob/master/BitsyBox_logo1.png?raw=true" alt="Logo" style="max-width: 300px;">
-    </header>
-    <div id="rendered-invoice-content" style="font-size: 14px;"></div>
-    <div style="text-align:center; margin-top: 20px;">
-      <button onclick="goBack()" style="background:#0a194f; color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer;">Back to Invoice Form</button>
+    <!-- Printable Invoice Container (initially hidden) -->
+    <div id="invoice-container" class="invoice-container">
+        <!-- The generated invoice content will be inserted here -->
     </div>
-  </div>
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyDZ55PBJJXOUTRDT5V_Lph5uJnor3oH5DA",
-    authDomain: "invoiceapp-8591d.firebaseapp.com",
-    databaseURL: "https://invoiceapp-8591d-default-rtdb.firebaseio.com",
-    projectId: "invoiceapp-8591d",
-    storageBucket: "invoiceapp-8591d.firebasestorage.app",
-    messagingSenderId: "515462960884",
-    appId: "1:515462960884:web:91c194269d7c7d12f070a1"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+    <!-- Modal for notifications -->
+    <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden justify-center items-center p-4">
+        <div class="bg-white p-6 rounded-lg shadow-xl text-center w-full max-w-sm">
+            <p id="modal-message" class="text-lg font-semibold text-gray-800"></p>
+            <button id="modal-close-btn" class="mt-4 py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-150 ease-in-out">Close</button>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, addDoc, setDoc, updateDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-  function generateInvoiceNumber() {
-    let lastInvoice = localStorage.getItem("lastInvoice") || 1000;
-    lastInvoice++;
-    localStorage.setItem("lastInvoice", lastInvoice);
-    return `INV-${lastInvoice}`;
-  }
+        // Firebase global variables
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-  document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("invoice-number").value = generateInvoiceNumber();
-  });
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        let userId = null;
+        let invoiceCounter = 1; // Local counter for the session
 
-  function addRow() {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>
-        <select onchange="setPrice(this)">
-          <option disabled selected>Select Item</option>
-          <option value="225">Amber Leaf</option>
-          <option value="50">Filter Box</option>
-          <option value="20">Rolling Paper</option>
-        </select>
-      </td>
-      <td><input type="number" value="1" onchange="updateRow(this)"></td>
-      <td><input type="number" value="0" readonly></td>
-      <td class="total">0.00</td>`;
-    document.getElementById('items').appendChild(row);
-  }
+        // Get references to all relevant DOM elements
+        const appContainer = document.getElementById('app-container');
+        const invoiceContainer = document.getElementById('invoice-container');
+        const lineItemsContainer = document.getElementById('line-items');
+        const addLineItemBtn = document.getElementById('addLineItemBtn');
+        const generateInvoiceBtn = document.getElementById('generateInvoiceBtn');
+        const saveInvoiceBtn = document.getElementById('saveInvoiceBtn');
+        const taxRateInput = document.getElementById('taxRate');
+        const discountInput = document.getElementById('discount');
+        const subtotalSpan = document.getElementById('subtotal');
+        const totalSpan = document.getElementById('total');
+        const savedInvoicesList = document.getElementById('saved-invoices-list');
+        const loadingMessage = document.getElementById('loading-message');
+        const modal = document.getElementById('modal');
+        const modalMessage = document.getElementById('modal-message');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const clientNameInput = document.getElementById('clientName');
+        const clientContactTextarea = document.getElementById('clientContact');
+        const bankDetailsTextarea = document.getElementById('bankDetails');
 
-  function setPrice(select) {
-    const price = +select.value;
-    const row = select.closest('tr');
-    row.querySelector('td:nth-child(3) input').value = price;
-    updateRow(row.querySelector('td:nth-child(2) input'));
-  }
+        let savedInvoices = []; // Ensure savedInvoices is always an array
 
-  function updateRow(qtyInput) {
-    const row = qtyInput.closest('tr');
-    const qty = +qtyInput.value;
-    const price = +row.querySelector('td:nth-child(3) input').value;
-    const total = (qty * price).toFixed(2);
-    row.querySelector('.total').innerText = total;
-    updateTotals();
-  }
-
-  function updateTotals() {
-    let subtotal = 0;
-    document.querySelectorAll('.total').forEach(cell => {
-      subtotal += +cell.innerText;
-    });
-    const gstRate = parseFloat(document.getElementById('gst').value || 0);
-    const gstAmount = subtotal * (gstRate / 100);
-    const grandTotal = subtotal + gstAmount;
-    document.getElementById('subtotal').innerText = subtotal.toFixed(2);
-    document.getElementById('grand-total').innerText = grandTotal.toFixed(2);
-  }
-
-  function createInvoice() {
-    const customer = document.getElementById('customer-name').value;
-    const contact = document.getElementById('customer-contact').value;
-    const gstRate = parseFloat(document.getElementById('gst').value || 0);
-    const invoiceNo = document.getElementById('invoice-number').value;
-    const items = [];
-
-    document.querySelectorAll('#items tr').forEach(row => {
-      const itemName = row.querySelector('select')?.selectedOptions[0]?.text || '';
-      const qty = row.querySelector('td:nth-child(2) input').value;
-      const rate = row.querySelector('td:nth-child(3) input').value;
-      const total = row.querySelector('td:nth-child(4)').innerText;
-      if (itemName) {
-        items.push({ itemName, qty, rate, total });
-      }
-    });
-
-    const subtotal = parseFloat(document.getElementById('subtotal').innerText || 0);
-    const total = parseFloat(document.getElementById('grand-total').innerText || 0);
-    const gstAmount = subtotal * (gstRate / 100);
-
-    const renderedHTML = `
-      <p><strong>Invoice No:</strong> ${invoiceNo}</p>
-      <p><strong>Customer:</strong> ${customer}</p>
-      <p><strong>Contact:</strong> ${contact}</p>
-      <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-        <thead>
-          <tr style="background: #0a194f; color: white;">
-            <th style="padding: 8px;">Item</th>
-            <th style="padding: 8px;">Qty</th>
-            <th style="padding: 8px;">Rate (MVR)</th>
-            <th style="padding: 8px;">Subtotal (MVR)</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${items.map(i => `
-            <tr>
-              <td style="padding: 8px;">${i.itemName}</td>
-              <td style="padding: 8px; text-align:center;">${i.qty}</td>
-              <td style="padding: 8px; text-align:right;">${parseFloat(i.rate).toFixed(2)}</td>
-              <td style="padding: 8px; text-align:right;">${parseFloat(i.total).toFixed(2)}</td>
-            </tr>`).join('')}
-        </tbody>
-      </table>
-      <div style="margin-top: 20px; text-align: right;">
-        <p><strong>Subtotal:</strong> MVR ${subtotal.toFixed(2)}</p>
-        <p><strong>GST (${gstRate}%):</strong> MVR ${gstAmount.toFixed(2)}</p>
-        <p><strong>Grand Total:</strong> MVR ${total.toFixed(2)}</p>
-      </div>
-      <div style="margin-top: 20px; text-align:center;">
-        Thank you for your business!
-        <strong>BitsyBox</strong><br>
-<button id="share-btn" onclick="shareInvoice()" style="
-  background: #25D366;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: 600;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
-">📤 Share Invoice</button>
-      </div>
-    `;
-
-    document.getElementById('rendered-invoice-content').innerHTML = renderedHTML;
-    document.getElementById('form-container').style.display = 'none';
-    document.getElementById('invoice-preview').style.display = 'block';
-
-    db.collection("invoices").add({
-      invoiceNo: invoiceNo,
-      customerName: customer,
-      customerContact: contact,
-      items: items,
-      subtotal: subtotal,
-      gstRate: gstRate,
-      gstAmount: gstAmount,
-      grandTotal: total,
-      createdAt: new Date()
-    }).then(() => {
-      console.log("Invoice saved to Firestore.");
-    }).catch(error => {
-      console.error("Error saving invoice:", error);
-    });
-
-    clearForm();
-  }
-
-  function clearForm() {
-    document.getElementById('customer-name').value = '';
-    document.getElementById('customer-contact').value = '';
-    document.getElementById('gst').value = 0;
-    document.getElementById('items').innerHTML = `
-      <tr>
-        <td>
-          <select onchange="setPrice(this)">
-            <option disabled selected>Select Item</option>
-            <option value="225">Amber Leaf</option>
-            <option value="50">Filter Box</option>
-            <option value="20">Rolling Paper</option>
-          </select>
-        </td>
-        <td><input type="number" value="1" onchange="updateRow(this)"></td>
-        <td><input type="number" value="0" readonly></td>
-        <td class="total">0.00</td>
-      </tr>`;
-    updateTotals();
-    document.getElementById("invoice-number").value = generateInvoiceNumber();
-  }
-
-  function goBack() {
-    document.getElementById('invoice-preview').style.display = 'none';
-    document.getElementById('form-container').style.display = 'block';
-  }
-
-  function shareViaWhatsApp() {
-    html2canvas(document.getElementById('invoice-preview')).then(canvas => {
-      canvas.toBlob(blob => {
-        const fakeUploadUrl = 'https://imgur.com/upload-success.png'; // Simulated
-        const customer = document.getElementById('customer-name').value;
-        const invoiceNo = document.getElementById('invoice-number').value;
-        const total = document.getElementById('grand-total').innerText;
-
-        const message = `Hello ${customer},%0AHere is your invoice:%0AInvoice No: ${invoiceNo}%0ATotal: MVR ${total}%0AInvoice Image: ${fakeUploadUrl}`;
-        const whatsappUrl = `https://wa.me/?text=${message}`;
-        window.open(whatsappUrl, '_blank');
-      });
-    });
-  }
-
-  async function shareInvoice() {
-    const invoiceElement = document.getElementById('invoice-preview');
-    const shareBtn = document.getElementById('share-btn');
-    shareBtn.style.display = 'none';
-
-    try {
-      const canvas = await html2canvas(invoiceElement);
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-      const file = new File([blob], 'invoice.png', { type: 'image/png' });
-
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          title: 'Invoice from BitsyBox',
-          text: 'Please find the invoice attached.',
-          files: [file],
+        // Function to show a custom modal notification
+        function showModal(message) {
+            modalMessage.textContent = message;
+            modal.style.display = 'flex';
+        }
+        modalCloseBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
         });
-      } else {
-        const imageURL = URL.createObjectURL(blob);
-        const newTab = window.open();
-        newTab.document.write(`<img src="${imageURL}" style="width:100%; max-width:800px;" />`);
-        newTab.document.title = "Invoice Preview";
-        alert("Invoice opened in a new tab. Tap and hold the image to save or share.");
-      }
-    } catch (err) {
-      console.error('Share failed:', err);
-      alert('Invoice sharing failed. Please try again.');
-    } finally {
-      shareBtn.style.display = 'inline-block';
-    }
-  }
-</script>
+
+        // Function to generate a unique invoice number in BB-YY-### format
+        function generateInvoiceNumber() {
+            const year = new Date().getFullYear().toString().slice(-2);
+            const paddedNumber = String(invoiceCounter).padStart(3, '0');
+            return `BB-${year}-${paddedNumber}`;
+        }
+
+        // Function to create a new line item row
+        function createLineItem(description = '', quantity = 1, price = 0) {
+            const newItem = document.createElement('div');
+            newItem.className = 'grid grid-cols-2 md:grid-cols-4 gap-4 items-end line-item';
+            newItem.innerHTML = `
+                <div class="col-span-2 md:col-span-1">
+                    <label class="block text-xs font-medium text-gray-700">Description</label>
+                    <input type="text" value="${description}" class="item-description w-full rounded-lg border-gray-300 p-2 text-sm" placeholder="Item Description">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700">Quantity</label>
+                    <input type="number" value="${quantity}" min="1" class="item-quantity w-full rounded-lg border-gray-300 p-2 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700">Price</label>
+                    <input type="number" value="${price}" min="0" step="0.01" class="item-price w-full rounded-lg border-gray-300 p-2 text-sm">
+                </div>
+                <div class="flex items-center justify-center">
+                    <button class="remove-line-item-btn text-red-500 hover:text-red-700 transition duration-150 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            `;
+            lineItemsContainer.appendChild(newItem);
+            // Add event listeners to the new inputs
+            newItem.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', updateTotals);
+            });
+            // Add listener to the new remove button
+            newItem.querySelector('.remove-line-item-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                newItem.remove();
+                updateTotals();
+            });
+        }
+
+        // Function to clear existing line items
+        function clearLineItems() {
+            while (lineItemsContainer.firstChild) {
+                lineItemsContainer.removeChild(lineItemsContainer.firstChild);
+            }
+        }
+
+        // Function to calculate and update totals
+        function updateTotals() {
+            let subtotal = 0;
+            document.querySelectorAll('.line-item').forEach(item => {
+                const quantity = parseFloat(item.querySelector('.item-quantity').value) || 0;
+                const price = parseFloat(item.querySelector('.item-price').value) || 0;
+                subtotal += quantity * price;
+            });
+            
+            const discount = parseFloat(discountInput.value) || 0;
+            const subtotalAfterDiscount = subtotal - discount;
+            const taxRate = parseFloat(taxRateInput.value) || 0;
+            const taxAmount = subtotalAfterDiscount * (taxRate / 100);
+            const total = subtotalAfterDiscount + taxAmount;
+            
+            subtotalSpan.textContent = `MVR ${subtotal.toFixed(2)}`;
+            totalSpan.textContent = `MVR ${total.toFixed(2)}`;
+        }
+
+        // Function to generate and share/download the invoice as a PNG
+        async function generateAndShareInvoice() {
+            // Hardcoded company name
+            const companyName = 'BitsyBox';
+            const invoiceNumber = generateInvoiceNumber(); // Generate fresh number for the new invoice
+            const invoiceDate = new Date().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            }); // Get current date
+            const clientName = clientNameInput.value || 'Client Name';
+            const clientContact = clientContactTextarea.value || 'N/A';
+            const bankDetails = bankDetailsTextarea.value || 'N/A';
+            const bankDetailsArray = bankDetails.split(',').map(item => item.trim());
+            const filteredBankDetails = bankDetailsArray.filter(item => !item.toLowerCase().includes('bank name'));
+
+            let lineItemsHTML = '';
+            document.querySelectorAll('.line-item').forEach(item => {
+                const description = item.querySelector('.item-description').value || 'N/A';
+                const quantity = parseFloat(item.querySelector('.item-quantity').value) || 0;
+                const price = parseFloat(item.querySelector('.item-price').value) || 0;
+                const total = quantity * price;
+
+                lineItemsHTML += `
+                    <tr class="border-b border-gray-200">
+                        <td class="p-2 w-1/2">${description}</td>
+                        <td class="p-2 text-right w-1/6">${quantity}</td>
+                        <td class="p-2 text-right w-1/6">${price.toFixed(2)}</td>
+                        <td class="p-2 text-right w-1/6">${total.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            const subtotal = parseFloat(subtotalSpan.textContent.replace('MVR ', ''));
+            const discount = parseFloat(discountInput.value) || 0;
+            const total = parseFloat(totalSpan.textContent.replace('MVR ', ''));
+            const taxRate = parseFloat(taxRateInput.value) || 0;
+            
+            invoiceContainer.innerHTML = `
+                <div class="bg-white p-4 md:p-8 rounded-lg shadow-lg w-full max-w-4xl">
+                    <!-- Invoice Header with Logo, Title, and Invoice Info -->
+                    <div class="flex justify-between items-start mb-6 border-b-2 pb-4 border-indigo-100">
+                        <!-- Left-aligned Logo and Company Info -->
+                        <div class="flex items-center space-x-4">
+                            <!-- Desktop Logo -->
+                            <img class="hidden md:block w-20 h-auto flex-shrink-0 rounded-lg shadow-md" src="https://github.com/and4yy/invoiceapp/blob/master/BitsyBox_logo.png?raw=true" alt="BitsyBox Logo" onerror="this.onerror=null; this.src='https://placehold.co/96x96/FFFFFF/000000?text=BitsyBox'">
+                            <!-- Mobile Icon -->
+                            <img class="block md:hidden w-16 h-auto flex-shrink-0 rounded-lg shadow-md" src="https://github.com/and4yy/invoiceapp/blob/master/BitsyBox_icon.png?raw=true" alt="BitsyBox Logo" onerror="this.onerror=null; this.src='https://placehold.co/96x96/FFFFFF/000000?text=BB'">
+                            <div class="company-info flex-1">
+                                <div class="text-xl md:text-2xl font-bold company-gradient">${companyName}</div>
+                                <div class="text-xs md:text-sm text-gray-500">
+                                    REG NO: BP79122025<br>
+                                    H.GADHAGE, MALE CITY | +960 737-1611
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right-aligned Invoice Details -->
+                        <div class="text-right">
+                            <h2 class="text-3xl md:text-4xl font-extrabold text-indigo-600">INVOICE</h2>
+                            <p class="text-sm font-medium text-gray-800 mt-2">No: <span class="text-xs text-gray-500">${invoiceNumber}</span></p>
+                            <p class="text-sm font-medium text-gray-800">Date: <span class="text-xs text-gray-500">${invoiceDate}</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Billing Information with more spacing -->
+                    <div class="mb-8 p-4 bg-indigo-50 rounded-lg border border-indigo-100">
+                        <h3 class="font-bold text-indigo-800 text-lg mb-2">BILL TO:</h3>
+                        <div class="text-gray-700 text-sm">
+                            <p class="font-bold">${clientName}</p>
+                            <p>${clientContact.split('\n').join('<br>')}</p>
+                        </div>
+                    </div>
+
+                    <!-- Line Items Table -->
+                    <div class="overflow-x-auto mb-6">
+                        <table class="min-w-full bg-white border border-gray-200 rounded-lg table-fixed">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-700 text-left text-sm">
+                                    <th class="p-2 w-1/2 font-bold">ITEM</th>
+                                    <th class="p-2 text-right w-1/6 font-bold">QTY</th>
+                                    <th class="p-2 text-right w-1/6 font-bold">PRICE</th>
+                                    <th class="p-2 text-right w-1/6 font-bold">TOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${lineItemsHTML}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Totals Section -->
+                    <div class="flex justify-end mb-6">
+                        <div class="w-full max-w-xs space-y-2 text-sm p-4 rounded-lg bg-gray-50">
+                            <div class="flex justify-between">
+                                <span class="text-gray-700">SUBTOTAL:</span>
+                                <span class="font-medium">MVR ${subtotal.toFixed(2)}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-700">DISCOUNT:</span>
+                                <span class="font-medium">MVR ${discount.toFixed(2)}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-700">TAX (${taxRate}%):</span>
+                                <span class="font-medium">MVR ${((subtotal - discount) * (taxRate/100)).toFixed(2)}</span>
+                            </div>
+                            <div class="flex justify-between font-bold text-lg border-t pt-2 mt-2 border-gray-200">
+                                <span class="text-gray-800">TOTAL (MVR):</span>
+                                <span class="text-indigo-600">${total.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Terms and Bank Details -->
+                    <div class="mt-8 text-sm p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <div>
+                            <h3 class="font-bold text-gray-700 border-b pb-1">Our Bank details are as Follows:</h3>
+                            ${filteredBankDetails.map(detail => `<p class="text-gray-600">${detail}</p>`).join('')}
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-8 text-gray-500 text-sm">
+                        Thank you for your business! We are looking forward to serve you again.
+                    </div>
+                </div>
+            `;
+
+            // Temporarily show the container for html2canvas to capture it correctly
+            invoiceContainer.style.display = 'block';
+
+            // Use html2canvas to convert the invoice HTML to a canvas
+            try {
+                const canvas = await html2canvas(invoiceContainer, {
+                    scale: 2, // Use a higher scale for better resolution
+                    logging: false,
+                    useCORS: true // Required for handling images from different origins
+                });
+                
+                // Get the image data as a PNG
+                const imageDataUrl = canvas.toDataURL('image/png');
+                
+                // Convert data URL to Blob for sharing
+                const response = await fetch(imageDataUrl);
+                const blob = await response.blob();
+                const file = new File([blob], `${invoiceNumber}.png`, { type: 'image/png' });
+
+                // Check if the Web Share API is available
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: `Invoice ${invoiceNumber}`,
+                            text: `Please find the attached invoice from ${companyName}.`,
+                            files: [file],
+                        });
+                        showModal('Invoice shared successfully!');
+                    } catch (err) {
+                        console.warn('Web Share API failed, falling back to download:', err.message);
+                        // Fallback to download if sharing fails or is cancelled
+                        downloadImage(imageDataUrl, invoiceNumber);
+                        showModal('Permission denied for sharing. The invoice has been downloaded instead.');
+                    }
+                } else {
+                    // Fallback for browsers that don't support the Web Share API (e.g., desktop)
+                    downloadImage(imageDataUrl, invoiceNumber);
+                    showModal('Your browser does not support sharing. Invoice downloaded!');
+                }
+
+            } catch (err) {
+                console.error("Error generating or sharing invoice:", err);
+                showModal("An error occurred. Could not generate or share the invoice.");
+            } finally {
+                // Hide the invoice container after the process is complete
+                invoiceContainer.style.display = 'none';
+            }
+        }
+
+        // Function to trigger a download
+        function downloadImage(dataUrl, fileName) {
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = `${fileName}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Function to get invoice data from the form
+        function getInvoiceData() {
+            const lineItems = [];
+            document.querySelectorAll('.line-item').forEach(item => {
+                lineItems.push({
+                    description: item.querySelector('.item-description').value,
+                    quantity: parseFloat(item.querySelector('.item-quantity').value) || 0,
+                    price: parseFloat(item.querySelector('.item-price').value) || 0,
+                });
+            });
+
+            return {
+                invoiceNumber: invoiceCounter, // Store the counter value instead of the formatted string
+                clientName: clientNameInput.value,
+                invoiceDate: new Date().toLocaleDateString('en-US'), // Always save the current date
+                clientContact: clientContactTextarea.value,
+                discount: parseFloat(discountInput.value) || 0,
+                taxRate: parseFloat(taxRateInput.value) || 0,
+                bankDetails: bankDetailsTextarea.value,
+                lineItems: JSON.stringify(lineItems), // Serialize to string for Firestore
+                subtotal: parseFloat(subtotalSpan.textContent.replace('MVR ', '')) || 0,
+                total: parseFloat(totalSpan.textContent.replace('MVR ', '')) || 0,
+                createdAt: new Date(),
+            };
+        }
+
+        // Function to load a saved invoice into the form
+        function loadInvoice(invoice) {
+            clearLineItems();
+            invoiceCounter = invoice.invoiceNumber; // Set the counter to the saved number
+            clientNameInput.value = invoice.clientName;
+            clientContactTextarea.value = invoice.clientContact;
+            discountInput.value = invoice.discount;
+            taxRateInput.value = invoice.taxRate;
+            bankDetailsTextarea.value = invoice.bankDetails;
+            
+            try {
+                const lineItems = JSON.parse(invoice.lineItems);
+                lineItems.forEach(item => {
+                    createLineItem(item.description, item.quantity, item.price);
+                });
+            } catch (e) {
+                console.error("Error parsing line items:", e);
+                createLineItem();
+            }
+            updateTotals();
+        }
+
+        // Event handler for saving an invoice
+        async function saveInvoice() {
+            if (!userId) {
+                showModal("User not authenticated. Please wait a moment and try again.");
+                return;
+            }
+            try {
+                const invoiceData = getInvoiceData();
+                await addDoc(collection(db, `artifacts/${appId}/users/${userId}/invoices`), invoiceData);
+                showModal("Invoice saved successfully!");
+                // Clear the form and generate a new invoice number for the next one
+                clearForm();
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                showModal("Error saving invoice. Check console for details.");
+            }
+        }
+
+        // Function to clear the form
+        function clearForm() {
+            clientNameInput.value = '';
+            clientContactTextarea.value = '';
+            discountInput.value = 0;
+            taxRateInput.value = 0;
+            bankDetailsTextarea.value = 'Bank Name: MALDIVES ISLAMIC BANK, Account Number: 99010310011996100 (MVR), Account Name: AKK MALDIVES';
+            clearLineItems();
+            createLineItem();
+            updateTotals();
+            // A new invoice number will be generated on click of the "Generate" button, or on page load.
+        }
+        
+        // Firebase Auth listener
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                console.log("User is authenticated:", userId);
+                loadingMessage.textContent = "Loading invoices...";
+
+                // Set up the real-time listener for saved invoices
+                onSnapshot(collection(db, `artifacts/${appId}/users/${userId}/invoices`), (snapshot) => {
+                    savedInvoices = [];
+                    savedInvoicesList.innerHTML = '';
+                    snapshot.forEach(doc => {
+                        const invoice = { id: doc.id, ...doc.data() };
+                        savedInvoices.push(invoice);
+                        
+                        const invoiceEl = document.createElement('div');
+                        invoiceEl.className = 'p-3 border-l-4 border-indigo-500 bg-white rounded-md cursor-pointer hover:bg-indigo-50 transition duration-150 ease-in-out shadow-sm';
+                        invoiceEl.innerHTML = `
+                            <p class="font-bold text-gray-800">Invoice #${String(invoice.invoiceNumber).padStart(3, '0')}</p>
+                            <p class="text-sm text-gray-600">Client: ${invoice.clientName}</p>
+                            <p class="text-sm text-gray-500">Total: MVR ${invoice.total.toFixed(2)}</p>
+                        `;
+                        invoiceEl.addEventListener('click', () => loadInvoice(invoice));
+                        savedInvoicesList.appendChild(invoiceEl);
+                    });
+
+                    if (savedInvoices.length === 0) {
+                        savedInvoicesList.innerHTML = '<p class="text-gray-500 text-center py-4">No saved invoices found.</p>';
+                    } else {
+                        // Find the highest invoice number and set the local counter
+                        const maxInvoiceNumber = savedInvoices.reduce((max, inv) => Math.max(max, inv.invoiceNumber), 0);
+                        invoiceCounter = maxInvoiceNumber + 1;
+                    }
+                }, (error) => {
+                    console.error("Error listening to Firestore:", error);
+                    savedInvoicesList.innerHTML = '<p class="text-red-500 text-center">Error loading invoices.</p>';
+                });
+
+                // Initial form setup after successful auth
+                clearForm();
+
+            } else {
+                console.log("User not authenticated, signing in...");
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Firebase auth error:", error);
+                }
+            }
+        });
+
+        // Add event listeners
+        addLineItemBtn.addEventListener('click', () => createLineItem());
+        generateInvoiceBtn.addEventListener('click', generateAndShareInvoice);
+        saveInvoiceBtn.addEventListener('click', saveInvoice);
+        
+        // Initial event listeners for the form fields
+        document.querySelectorAll('.line-item input').forEach(input => {
+            input.addEventListener('input', updateTotals);
+        });
+        discountInput.addEventListener('input', updateTotals);
+        taxRateInput.addEventListener('input', updateTotals);
+    </script>
 </body>
 </html>
